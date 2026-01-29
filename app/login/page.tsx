@@ -35,12 +35,12 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-stone-50 dark:bg-zinc-950">
-      <div className="mx-auto max-w-md px-6 py-20 xl:max-w-lg xl:px-8 2xl:max-w-xl 2xl:px-10">
+      <div className="max-w-md mx-auto px-6 py-20">
         <div className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-8 shadow-sm">
-          <h1 className="text-2xl font-semibold text-stone-900 xl:text-3xl dark:text-stone-50">
+          <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-50">
             Sign in
           </h1>
-          <p className="mt-2 text-sm text-stone-600 xl:text-base dark:text-stone-300">
+          <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
             Choose a provider to continue to Devo Tracker.
           </p>
 

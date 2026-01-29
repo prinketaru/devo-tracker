@@ -20,7 +20,7 @@ export default function DevotionWorkspaceClient() {
     <main className="h-svh bg-stone-50 dark:bg-zinc-950">
       <div className="h-full flex flex-col">
         <div className="border-b border-stone-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/50 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-none items-center justify-between px-4 py-3 sm:px-6 xl:px-8 2xl:px-10">
+          <div className="mx-auto w-full max-w-none px-4 sm:px-6 py-3 flex items-center justify-between">
             <Link
               href="/dashboard"
               className="text-sm font-medium text-stone-700 dark:text-stone-200 hover:text-stone-900 dark:hover:text-white transition-colors"

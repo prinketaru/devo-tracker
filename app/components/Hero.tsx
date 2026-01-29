@@ -1,10 +1,10 @@
 export function Hero() {
   return (
-    <section className="mx-auto max-w-4xl px-6 py-16 text-center xl:max-w-5xl xl:px-8 2xl:max-w-6xl 2xl:px-10">
-      <h1 className="mb-4 text-4xl font-bold text-stone-900 xl:text-5xl 2xl:text-6xl dark:text-stone-50">
+    <section className="max-w-4xl mx-auto px-6 py-16 text-center">
+      <h1 className="text-4xl font-bold text-stone-900 dark:text-stone-50 mb-4">
         Build a daily devotion habit
       </h1>
-      <p className="mx-auto mb-8 max-w-2xl text-lg text-stone-600 xl:text-xl 2xl:text-2xl dark:text-stone-300">
+      <p className="text-lg text-stone-600 dark:text-stone-300 mb-8 max-w-2xl mx-auto">
         Simple tracking to keep your spiritual practice consistent and meaningful.
       </p>
       <div className="flex gap-3 justify-center">

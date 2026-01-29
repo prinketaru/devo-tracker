@@ -49,15 +49,15 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-stone-50 dark:bg-zinc-950">
+    <main className="min-h-screen bg-stone-50 dark:bg-zinc-950">
       <Header />
-      <div className="mx-auto flex-1 w-full max-w-5xl px-6 py-12 xl:max-w-6xl xl:px-8 2xl:max-w-7xl 2xl:px-10">
+      <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-stone-900 xl:text-4xl 2xl:text-5xl dark:text-stone-50">
+            <h1 className="text-3xl font-semibold text-stone-900 dark:text-stone-50">
               Your Devotion Dashboard
             </h1>
-            <p className="text-sm text-stone-600 xl:text-base 2xl:text-lg dark:text-stone-300">
+            <p className="text-sm text-stone-600 dark:text-stone-300">
               Track daily devotion moments and stay consistent.
             </p>
           </div>
@@ -72,12 +72,12 @@ export default async function DashboardPage() {
         <section className="mt-10 grid gap-6 md:grid-cols-[2fr_1fr]">
           <div className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-stone-900 xl:text-xl 2xl:text-2xl dark:text-stone-100">
+              <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
                 Recent Devotions
               </h2>
               <button
                 type="button"
-                className="text-sm text-amber-700 xl:text-base dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 transition-colors"
+                className="text-sm text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 transition-colors"
               >
                 View all
               </button>
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
             </section>
 
             <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-stone-900 xl:text-xl 2xl:text-2xl dark:text-stone-100">
+              <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
                 Weekly Stats
               </h2>
               <div className="mt-4 space-y-3">

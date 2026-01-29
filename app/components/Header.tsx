@@ -33,7 +33,7 @@ export function Header() {
 
   return (
     <nav className="border-b border-stone-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/60 backdrop-blur">
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-4 xl:max-w-5xl xl:px-8 2xl:max-w-6xl 2xl:px-10">
+      <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="h-9 w-9 rounded-xl bg-amber-600 text-white flex items-center justify-center text-lg font-semibold shadow-sm group-hover:bg-amber-700 transition-colors">
             D

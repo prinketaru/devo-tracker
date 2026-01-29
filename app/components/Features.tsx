@@ -6,8 +6,8 @@ export function Features() {
   ];
 
   return (
-    <section className="mx-auto max-w-4xl px-6 py-16 xl:max-w-5xl xl:px-8 2xl:max-w-6xl 2xl:px-10">
-      <h2 className="mb-10 text-center text-2xl font-bold text-stone-900 xl:text-3xl 2xl:text-4xl dark:text-stone-50">
+    <section className="max-w-4xl mx-auto px-6 py-16">
+      <h2 className="text-2xl font-bold text-center text-stone-900 dark:text-stone-50 mb-10">
         Simple features, real impact
       </h2>
       <div className="grid md:grid-cols-3 gap-6">
