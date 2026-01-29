@@ -4,6 +4,12 @@
 :root {
   --background: #fbf7ef;
   --foreground: #1f1a12;
+  /* Fluid base: 16px on small screens → scales up to 22px on large displays */
+  --fluid-size: clamp(16px, 14px + 0.5vw, 22px);
+}
+
+html {
+  font-size: var(--fluid-size);
 }
 
 @theme inline {
