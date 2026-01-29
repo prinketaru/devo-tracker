@@ -1,24 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ForwardRefEditor } from "./ForwardRefEditor";
-
-const starterMarkdown = `# Today's Devotion
-
-## Scripture
-_Add the passage you read today._
-
-## Reflection
-What stood out? What is God inviting you to do?
-
-## Prayer
-Write a simple prayer response.
-`;
+import {
+  DEFAULT_DEVOTION_TEMPLATE,
+  DEFAULT_TEMPLATE_STORAGE_KEY,
+} from "@/app/lib/default-devotion-template";
 
 type TabId = "bible" | "notes";
 
 export function DevotionWorkspace() {
   const [activeTab, setActiveTab] = useState<TabId>("bible");
+  const [initialMarkdown, setInitialMarkdown] = useState<string | null>(null);
+
+  useEffect(() => {
+    setInitialMarkdown(
+      localStorage.getItem(DEFAULT_TEMPLATE_STORAGE_KEY) ??
+        DEFAULT_DEVOTION_TEMPLATE,
+    );
+  }, []);
 
   return (
     <section className="h-full">
@@ -49,10 +49,12 @@ export function DevotionWorkspace() {
             </div>
 
             <div className="flex-1 min-h-0">
-              <ForwardRefEditor
-                markdown={starterMarkdown}
-                className="devotion-editor h-full min-h-0 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-stone-900 dark:text-stone-100 font-sans prose prose-stone dark:prose-invert max-w-none"
-              />
+              {initialMarkdown !== null && (
+                <ForwardRefEditor
+                  markdown={initialMarkdown}
+                  className="devotion-editor h-full min-h-0 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-stone-900 dark:text-stone-100 font-sans prose prose-stone dark:prose-invert max-w-none"
+                />
+              )}
             </div>
           </div>
         </div>
