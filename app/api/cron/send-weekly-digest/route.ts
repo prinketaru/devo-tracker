@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/app/lib/mongodb";
-import { sendEmail } from "@/app/lib/mailgun";
+import { sendEmail } from "@/app/lib/smtp2go";
+import { getWeeklyDigestEmail } from "@/app/lib/email-templates";
 
 const PREFERENCES_COLLECTION = "user_preferences";
 const USER_COLLECTION = "user";
@@ -68,15 +69,8 @@ export async function POST(request: Request) {
     const count = uniqueDays.size;
     const name = user?.name || "there";
 
-    const text = `Hi ${name},\n\nYour Devo Tracker weekly summary:\n- Days with devotions this week: ${count} / 7\n- Total devotion entries: ${devotions.length}\n\nKeep going!`;
-    const html = `<p>Hi ${name},</p><p>Your Devo Tracker weekly summary:</p><ul><li>Days with devotions this week: ${count} / 7</li><li>Total devotion entries: ${devotions.length}</li></ul><p>Keep going!</p>`;
-
-    const { ok } = await sendEmail({
-      to: email,
-      subject: "Devo Tracker – Your weekly summary",
-      text,
-      html,
-    });
+    const { subject, text, html } = getWeeklyDigestEmail(name, count, devotions.length);
+    const { ok } = await sendEmail({ to: email, subject, text, html });
     if (ok) sent++;
   }
 

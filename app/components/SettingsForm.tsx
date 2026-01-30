@@ -405,7 +405,7 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
             <span className="text-sm text-stone-700 dark:text-stone-200">Also send reminder emails at these times</span>
           </label>
           <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
-            Requires Mailgun to be configured. A cron job must call <code className="bg-stone-200 dark:bg-zinc-700 px-1 rounded">/api/cron/send-reminder-emails</code> every 5–15 minutes.
+            Requires SMTP2GO to be configured. A cron job must call <code className="bg-stone-200 dark:bg-zinc-700 px-1 rounded">/api/cron/send-reminder-emails</code> every 5–15 minutes.
           </p>
           <label className="mt-2 flex items-center gap-2 cursor-pointer">
             <input
@@ -419,7 +419,7 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
           <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
             Get a weekly summary (e.g. days completed, streak). Cron must call <code className="bg-stone-200 dark:bg-zinc-700 px-1 rounded">/api/cron/send-weekly-digest</code> (e.g. Sunday evening).
           </p>
-          <form onSubmit={handleAddReminder} className="flex gap-2">
+          <form onSubmit={handleAddReminder} className="flex gap-2 mt-6">
             <input
               type="time"
               value={newReminderTime}

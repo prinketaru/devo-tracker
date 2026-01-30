@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/app/lib/mongodb";
-import { sendEmail } from "@/app/lib/mailgun";
+import { sendEmail } from "@/app/lib/smtp2go";
+import { getReminderEmail } from "@/app/lib/email-templates";
 
 const PREFERENCES_COLLECTION = "user_preferences";
 const USER_COLLECTION = "user"; // Better Auth default
@@ -49,12 +50,8 @@ export async function POST(request: Request) {
     const email = user?.email;
     if (!email || typeof email !== "string") continue;
 
-    const { ok } = await sendEmail({
-      to: email,
-      subject: "Devo Tracker – Time for your devotion",
-      text: "This is your reminder to spend time in devotion today.",
-      html: "<p>This is your reminder to spend time in devotion today.</p>",
-    });
+    const { subject, text, html } = getReminderEmail();
+    const { ok } = await sendEmail({ to: email, subject, text, html });
     if (ok) sent++;
   }
 
