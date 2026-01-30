@@ -4,13 +4,27 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/app/lib/auth-client";
-import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | undefined>(undefined);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch("/api/user/preferences", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { profileImageUrl?: string } | null) => {
+        if (typeof data?.profileImageUrl === "string" && data.profileImageUrl.trim() !== "") {
+          setProfileImageUrl(data.profileImageUrl.trim());
+        } else {
+          setProfileImageUrl(undefined);
+        }
+      })
+      .catch(() => {});
+  }, [session?.user?.id]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -29,7 +43,7 @@ export function Header() {
 
   const userLabel = session?.user?.name || session?.user?.email || "Account";
   const userEmail = session?.user?.email || "Signed in";
-  const userImage = session?.user?.image;
+  const userImage = profileImageUrl ?? session?.user?.image;
 
   return (
     <nav className="border-b border-stone-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/60 backdrop-blur">
@@ -117,7 +131,6 @@ export function Header() {
               Sign In
             </Link>
           )}
-          <ThemeToggle />
         </div>
       </div>
     </nav>

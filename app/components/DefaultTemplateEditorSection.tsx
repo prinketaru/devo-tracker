@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
-import { DEFAULT_TEMPLATE_STORAGE_KEY } from "@/app/lib/default-devotion-template";
 
 const ForwardRefEditor = dynamic(
   () =>
@@ -19,14 +18,24 @@ export function DefaultTemplateEditorSection({
   initialMarkdown,
 }: DefaultTemplateEditorSectionProps) {
   const editorRef = useRef<MDXEditorMethods>(null);
-  const [saveMessage, setSaveMessage] = useState<"success" | null>(null);
+  const [saveMessage, setSaveMessage] = useState<"success" | "error" | null>(null);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const markdown = editorRef.current?.getMarkdown();
     if (markdown == null) return;
-    localStorage.setItem(DEFAULT_TEMPLATE_STORAGE_KEY, markdown);
-    setSaveMessage("success");
-    setTimeout(() => setSaveMessage(null), 3000);
+    setSaveMessage(null);
+    const res = await fetch("/api/user/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ defaultTemplateMarkdown: markdown }),
+    });
+    if (res.ok) {
+      setSaveMessage("success");
+      setTimeout(() => setSaveMessage(null), 3000);
+    } else {
+      setSaveMessage("error");
+    }
   };
 
   return (
@@ -56,6 +65,11 @@ export function DefaultTemplateEditorSection({
         {saveMessage === "success" && (
           <span className="text-sm text-green-600 dark:text-green-400">
             Template saved.
+          </span>
+        )}
+        {saveMessage === "error" && (
+          <span className="text-sm text-red-600 dark:text-red-400">
+            Failed to save. Try again.
           </span>
         )}
       </div>

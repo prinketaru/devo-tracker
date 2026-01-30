@@ -1,5 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import { ThemeProvider } from "@/app/components/ThemeProvider";
+import { ReminderNotifier } from "@/app/components/ReminderNotifier";
+import { ServiceWorkerRegistration } from "@/app/components/ServiceWorkerRegistration";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,9 +15,22 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbf7ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#15130f" },
+  ],
+};
+
 export const metadata: Metadata = {
   title: "Devo Tracker | Your Daily Devotion Companion",
   description: "Track your daily devotions, build spiritual habits, and grow closer to your faith. Simple, beautiful, and focused on meaningful spiritual growth.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Devo Tracker",
+  },
 };
 
 export default function RootLayout({
@@ -23,9 +39,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${playfair.variable} antialiased`}>
-        {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);})();`,
+          }}
+        />
+        <ThemeProvider>
+          <ServiceWorkerRegistration />
+          <ReminderNotifier />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
-import { auth } from "@/app/lib/auth";
+import { getSession } from "@/app/lib/auth-server";
 import { Header } from "@/app/components/Header";
 import { Footer } from "@/app/components/Footer";
 import { SettingsForm } from "@/app/components/SettingsForm";
+import { UserPreferencesInit } from "@/app/components/UserPreferencesInit";
 
 export default async function SettingsPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");
@@ -14,6 +14,7 @@ export default async function SettingsPage() {
 
   return (
     <main className="min-h-screen bg-stone-50 dark:bg-zinc-950">
+      <UserPreferencesInit />
       <Header />
       <div className="max-w-2xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-semibold text-stone-900 dark:text-stone-50">

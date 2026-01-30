@@ -4,12 +4,7 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/app/lib/auth-client";
-import {
-  DEFAULT_DEVOTION_TEMPLATE,
-  DEFAULT_TEMPLATE_STORAGE_KEY,
-} from "@/app/lib/default-devotion-template";
-
-const TIMEZONE_STORAGE_KEY = "devo-tracker-timezone";
+import { useTheme } from "@/app/components/ThemeProvider";
 
 const DefaultTemplateEditorSection = dynamic(
   () =>
@@ -18,6 +13,15 @@ const DefaultTemplateEditorSection = dynamic(
     ),
   { ssr: false },
 );
+
+type Reminder = { id: string; time: string };
+
+function formatReminderTime(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  const hour = h % 12 || 12;
+  const ampm = h < 12 ? "AM" : "PM";
+  return `${hour}:${m.toString().padStart(2, "0")} ${ampm}`;
+}
 
 const COMMON_TIMEZONES = [
   "America/New_York",
@@ -43,6 +47,7 @@ type SettingsFormProps = {
 
 export function SettingsForm({ defaultName, email }: SettingsFormProps) {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const [name, setName] = useState(defaultName);
   const [timezone, setTimezone] = useState("UTC");
   const [nameSaving, setNameSaving] = useState(false);
@@ -54,19 +59,65 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [templateMarkdown, setTemplateMarkdown] = useState<string | null>(null);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [newReminderTime, setNewReminderTime] = useState("");
+  const [remindersSaving, setRemindersSaving] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [profileImageUrlSaving, setProfileImageUrlSaving] = useState(false);
+  const [profileImageUrlMessage, setProfileImageUrlMessage] = useState<"success" | "error" | null>(null);
+  const [reminderEmails, setReminderEmails] = useState(false);
+  const [weeklyDigest, setWeeklyDigest] = useState(false);
+  const [readingPlanProgress, setReadingPlanProgress] = useState<number | "">("");
+  const [restoreMessage, setRestoreMessage] = useState<"success" | "error" | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem(TIMEZONE_STORAGE_KEY);
-    if (stored) setTimezone(stored);
-    else setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    fetch("/api/user/preferences", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { timezone?: string; defaultTemplateMarkdown?: string; reminders?: Reminder[]; profileImageUrl?: string; reminderEmails?: boolean; weeklyDigest?: boolean; readingPlanProgress?: number } | null) => {
+        if (data?.timezone) setTimezone(data.timezone);
+        else setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+        if (data?.defaultTemplateMarkdown != null) setTemplateMarkdown(data.defaultTemplateMarkdown);
+        else setTemplateMarkdown("");
+        if (Array.isArray(data?.reminders)) setReminders(data.reminders);
+        if (typeof data?.profileImageUrl === "string") setProfileImageUrl(data.profileImageUrl);
+        if (typeof data?.reminderEmails === "boolean") setReminderEmails(data.reminderEmails);
+        if (typeof data?.weeklyDigest === "boolean") setWeeklyDigest(data.weeklyDigest);
+        if (typeof data?.readingPlanProgress === "number") setReadingPlanProgress(data.readingPlanProgress);
+      })
+      .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    setTemplateMarkdown(
-      localStorage.getItem(DEFAULT_TEMPLATE_STORAGE_KEY) ??
-        DEFAULT_DEVOTION_TEMPLATE,
-    );
-  }, []);
+  const saveReminders = async (next: Reminder[]) => {
+    setRemindersSaving(true);
+    try {
+      const res = await fetch("/api/user/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ reminders: next }),
+      });
+      if (res.ok) setReminders(next);
+    } finally {
+      setRemindersSaving(false);
+    }
+  };
+
+  const handleAddReminder = (e: React.FormEvent) => {
+    e.preventDefault();
+    const time = newReminderTime.trim();
+    if (!time || !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time)) return;
+    const id = crypto.randomUUID();
+    const next = [...reminders, { id, time }].sort((a, b) => a.time.localeCompare(b.time));
+    setReminders(next);
+    setNewReminderTime("");
+    saveReminders(next);
+  };
+
+  const handleRemoveReminder = (id: string) => {
+    const next = reminders.filter((r) => r.id !== id);
+    setReminders(next);
+    saveReminders(next);
+  };
 
   const handleSaveName = async () => {
     setNameSaving(true);
@@ -80,9 +131,93 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
     setNameMessage("success");
   };
 
-  const handleTimezoneChange = (value: string) => {
+  const handleTimezoneChange = async (value: string) => {
     setTimezone(value);
-    localStorage.setItem(TIMEZONE_STORAGE_KEY, value);
+    await fetch("/api/user/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ timezone: value }),
+    });
+  };
+
+  const handleSaveProfileImageUrl = async () => {
+    setProfileImageUrlSaving(true);
+    setProfileImageUrlMessage(null);
+    try {
+      const res = await fetch("/api/user/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ profileImageUrl: profileImageUrl.trim() || "" }),
+      });
+      if (res.ok) setProfileImageUrlMessage("success");
+      else setProfileImageUrlMessage("error");
+    } catch {
+      setProfileImageUrlMessage("error");
+    } finally {
+      setProfileImageUrlSaving(false);
+    }
+  };
+
+  const handleReminderEmailsChange = async (checked: boolean) => {
+    setReminderEmails(checked);
+    await fetch("/api/user/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ reminderEmails: checked }),
+    });
+  };
+
+  const handleWeeklyDigestChange = async (checked: boolean) => {
+    setWeeklyDigest(checked);
+    await fetch("/api/user/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ weeklyDigest: checked }),
+    });
+  };
+
+  const handleReadingPlanSave = async () => {
+    const val = readingPlanProgress === "" ? 0 : Math.min(365, Math.max(0, Number(readingPlanProgress)));
+    await fetch("/api/user/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ readingPlanProgress: val }),
+    });
+    setReadingPlanProgress(val || "");
+  };
+
+  const handleExport = (format: "json" | "markdown") => {
+    window.open(`/api/export?format=${format}`, "_blank", "noopener");
+  };
+
+  const handleBackup = () => {
+    window.open("/api/backup", "_blank", "noopener");
+  };
+
+  const handleRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setRestoreMessage(null);
+    try {
+      const text = await file.text();
+      const body = JSON.parse(text);
+      const res = await fetch("/api/backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+      const data = (await res.json()) as { success?: boolean };
+      setRestoreMessage(data.success ? "success" : "error");
+    } catch {
+      setRestoreMessage("error");
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -169,6 +304,42 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
               Email cannot be changed.
             </p>
           </label>
+
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+              Profile picture URL
+            </span>
+            <div className="mt-2 flex gap-2">
+              <input
+                type="url"
+                value={profileImageUrl}
+                onChange={(e) => setProfileImageUrl(e.target.value)}
+                placeholder="https://example.com/your-photo.jpg"
+                className="flex-1 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70"
+              />
+              <button
+                type="button"
+                onClick={handleSaveProfileImageUrl}
+                disabled={profileImageUrlSaving}
+                className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-70 cursor-pointer"
+              >
+                {profileImageUrlSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+              Optional. Leave empty to use your sign-in provider&apos;s picture.
+            </p>
+            {profileImageUrlMessage === "success" && (
+              <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+                Profile picture URL saved.
+              </p>
+            )}
+            {profileImageUrlMessage === "error" && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                Could not save. Try again.
+              </p>
+            )}
+          </label>
         </div>
       </section>
 
@@ -181,6 +352,23 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
           Preferences
         </h2>
         <label className="mt-4 block">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+            Theme
+          </span>
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as "system" | "light" | "dark")}
+            className="mt-2 w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70 cursor-pointer"
+          >
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+            Choose how the app looks. Your choice is saved.
+          </p>
+        </label>
+        <label className="mt-6 block">
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
             Timezone
           </span>
@@ -199,6 +387,142 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
             Used for devotion dates and reminders.
           </p>
         </label>
+
+        <div className="mt-6">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+            Devotion reminders
+          </span>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
+            Add times when you want to be reminded to do a devotion. Your list is saved. When the app is open, you&apos;ll get a browser notification at each reminder time—allow notifications when prompted.
+          </p>
+          <label className="mt-2 flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={reminderEmails}
+              onChange={(e) => handleReminderEmailsChange(e.target.checked)}
+              className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
+            />
+            <span className="text-sm text-stone-700 dark:text-stone-200">Also send reminder emails at these times</span>
+          </label>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
+            Requires Mailgun to be configured. A cron job must call <code className="bg-stone-200 dark:bg-zinc-700 px-1 rounded">/api/cron/send-reminder-emails</code> every 5–15 minutes.
+          </p>
+          <label className="mt-2 flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={weeklyDigest}
+              onChange={(e) => handleWeeklyDigestChange(e.target.checked)}
+              className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
+            />
+            <span className="text-sm text-stone-700 dark:text-stone-200">Send weekly summary email</span>
+          </label>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
+            Get a weekly summary (e.g. days completed, streak). Cron must call <code className="bg-stone-200 dark:bg-zinc-700 px-1 rounded">/api/cron/send-weekly-digest</code> (e.g. Sunday evening).
+          </p>
+          <form onSubmit={handleAddReminder} className="flex gap-2">
+            <input
+              type="time"
+              value={newReminderTime}
+              onChange={(e) => setNewReminderTime(e.target.value)}
+              className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70"
+              required
+            />
+            <button
+              type="submit"
+              disabled={remindersSaving}
+              className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-70 cursor-pointer"
+            >
+              {remindersSaving ? "Saving..." : "Add"}
+            </button>
+          </form>
+          {reminders.length > 0 ? (
+            <ul className="mt-3 space-y-2">
+              {reminders.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-center justify-between rounded-lg border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-700 dark:text-stone-200"
+                >
+                  <span>{formatReminderTime(r.time)}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveReminder(r.id)}
+                    disabled={remindersSaving}
+                    className="rounded px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">
+              No reminders yet. Pick a time above and click Add.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
+          Data &amp; backup
+        </h2>
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
+          Export devotions and prayer requests, or download a full backup. Restore from a backup file to merge data back.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => handleExport("json")}
+            className="rounded-md border border-stone-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800"
+          >
+            Export JSON
+          </button>
+          <button
+            type="button"
+            onClick={() => handleExport("markdown")}
+            className="rounded-md border border-stone-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800"
+          >
+            Export Markdown
+          </button>
+          <button
+            type="button"
+            onClick={handleBackup}
+            className="rounded-md border border-stone-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800"
+          >
+            Download backup
+          </button>
+          <label className="rounded-md border border-stone-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800 cursor-pointer">
+            Restore from file
+            <input type="file" accept=".json" onChange={handleRestore} className="hidden" />
+          </label>
+        </div>
+        {restoreMessage === "success" && <p className="mt-2 text-sm text-green-600 dark:text-green-400">Restore completed.</p>}
+        {restoreMessage === "error" && <p className="mt-2 text-sm text-red-600 dark:text-red-400">Restore failed. Check file format.</p>}
+        <div className="mt-6">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+            Reading plan (Bible-in-a-year day)
+          </span>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-2">
+            Optional. Set your current day (1–365) to track progress.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min={0}
+              max={365}
+              value={readingPlanProgress === "" ? "" : readingPlanProgress}
+              onChange={(e) => setReadingPlanProgress(e.target.value === "" ? "" : parseInt(e.target.value, 10))}
+              className="w-24 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={handleReadingPlanSave}
+              className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+            >
+              Save
+            </button>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 p-6 shadow-sm">

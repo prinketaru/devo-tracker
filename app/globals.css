@@ -24,6 +24,16 @@ body {
   font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
 }
 
+/* Safe area for notched devices (e.g. iPhone) */
+.safe-area-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-area-b {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 h1,
 h2,
 h3,
@@ -43,6 +53,18 @@ h6 {
 
 .devotion-editor .mdxeditor-toolbar {
   flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+/* Touch-friendly toolbar on mobile */
+@media (max-width: 640px) {
+  .devotion-editor .mdxeditor-toolbar button,
+  .devotion-editor .mdxeditor-toolbar [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem;
+  }
 }
 
 .devotion-editor .mdxeditor-root-contenteditable {
@@ -52,6 +74,9 @@ h6 {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  font-size: 1rem; /* 16px avoids iOS zoom on focus */
+  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .devotion-editor .mdxeditor-root-contenteditable h1,
@@ -143,5 +168,79 @@ h6 {
 
 .devotion-editor .mdxeditor-toolbar svg,
 .devotion-editor .mdxeditor-toolbar svg * {
-  stroke-width: 1.5;
+  stroke-width: 0;
+}
+
+/* Hide MDX Editor popup container when empty (it's appended to body and shows as a box at bottom of page) */
+.mdxeditor-popup-container:empty {
+  display: none !important;
+}
+
+/* ESV passage HTML (Bible tab) */
+.esv-passage {
+  color: inherit;
+}
+
+.esv-passage h2 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: inherit;
+}
+
+.esv-passage .verse-num,
+.esv-passage b.verse-num {
+  font-weight: 600;
+  margin-right: 0.25rem;
+  color: var(--foreground);
+  opacity: 0.8;
+}
+
+.esv-passage p {
+  margin-bottom: 0.5rem;
+  color: inherit;
+}
+
+.esv-passage p:last-child {
+  margin-bottom: 0;
+}
+
+.esv-passage a {
+  color: #b45309;
+  text-decoration: none;
+}
+
+.esv-passage a:hover {
+  text-decoration: underline;
+}
+
+.dark .esv-passage a {
+  color: #f59e0b;
+}
+
+.esv-passage .footnote {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  color: inherit;
+  opacity: 0.9;
+}
+
+.dark .esv-passage .footnote {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.esv-passage sup {
+  font-size: 0.65em;
+  color: #b45309;
+}
+
+.dark .esv-passage sup {
+  color: #f59e0b;
+}
+
+.esv-passage small.audio {
+  font-size: 0.7rem;
+  opacity: 0.85;
 }
