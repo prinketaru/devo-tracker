@@ -25,5 +25,4 @@ export type UserPreferences = {
   profileImageUrl?: string;
   reminderEmails?: boolean;
   weeklyDigest?: boolean;
-  readingPlanProgress?: number; // 1–365 for Bible-in-a-year day
 };

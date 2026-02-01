@@ -22,12 +22,15 @@ export function MarkCompleteButton({ timezone, todayDevotionId }: MarkCompleteBu
     setIsModalOpen(true);
   };
 
-  const handleSave = async (data: { title: string; passage: string; content: string }) => {
+  const handleSave = async (data: { title: string; passage: string; content: string; notes?: string }) => {
+    const title = data.title.trim() || "Devotion completed";
+    const passage = data.passage.trim() || "—";
+    const content = data.notes?.trim() ? `**Notes:**\n\n${data.notes.trim()}` : "";
     const res = await fetch("/api/devotions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify(data),
+      body: JSON.stringify({ title, passage, content }),
     });
     if (!res.ok) {
       throw new Error("Failed to save");
@@ -42,7 +45,7 @@ export function MarkCompleteButton({ timezone, todayDevotionId }: MarkCompleteBu
         onClick={handleOpenModal}
         className="inline-flex items-center justify-center rounded-md border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/30 px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors"
       >
-        {todayDevotionId ? "Edit today's devotion" : "✓ Mark today as complete"}
+        {todayDevotionId ? "Edit today's devotion" : "Quick log"}
       </button>
 
       <MarkCompleteModal

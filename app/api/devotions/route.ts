@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/app/lib/auth-server";
 import { getDb } from "@/app/lib/mongodb";
+import { validateDevotionInput } from "@/app/lib/validation";
 
 const DEVOTIONS_COLLECTION = "devotions";
 
@@ -22,8 +23,9 @@ export async function GET(request: Request) {
   const db = await getDb();
   const coll = db.collection(DEVOTIONS_COLLECTION);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const filter: any = { userId: session.user.id };
+  const filter: { userId: string; createdAt?: { $gte?: Date; $lte?: Date }; tags?: string; $or?: Record<string, RegExp>[] } = {
+    userId: session.user.id,
+  };
 
   if (from || to) {
     filter.createdAt = {};
@@ -74,8 +76,13 @@ export async function POST(request: Request) {
   const title = typeof body.title === "string" ? body.title.trim() : "";
   const passage = typeof body.passage === "string" ? body.passage.trim() : "";
   const content = typeof body.content === "string" ? body.content : "";
-  const tags = Array.isArray(body.tags) ? body.tags.filter((t): t is string => typeof t === "string").map((t) => t.trim()).filter(Boolean) : [];
+  const tags = Array.isArray(body.tags) ? body.tags.filter((t): t is string => typeof t === "string").map((t) => t.trim()).filter(Boolean).slice(0, 20) : [];
   const minutesSpent = typeof body.minutesSpent === "number" && body.minutesSpent >= 0 ? body.minutesSpent : undefined;
+
+  const validationError = validateDevotionInput(title, passage, content, tags);
+  if (validationError) {
+    return NextResponse.json({ error: validationError }, { status: 400 });
+  }
 
   const db = await getDb();
   const coll = db.collection(DEVOTIONS_COLLECTION);

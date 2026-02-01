@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getSession } from "@/app/lib/auth-server";
-import { getDb } from "@/app/lib/mongodb";
+import { getDb, parseObjectId } from "@/app/lib/mongodb";
+import { validateDevotionInput } from "@/app/lib/validation";
 
 const DEVOTIONS_COLLECTION = "devotions";
 
 type RouteContext = { params: Promise<{ id: string }> };
-
-function parseId(id: string): ObjectId | null {
-  if (!id || id.length !== 24) return null;
-  try {
-    return new ObjectId(id);
-  } catch {
-    return null;
-  }
-}
 
 /** GET /api/devotions/[id] – get a single devotion (owner only). */
 export async function GET(_request: Request, context: RouteContext) {
@@ -24,7 +16,7 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const { id } = await context.params;
-  const oid = parseId(id);
+  const oid = parseObjectId(id);
   if (!oid) {
     return NextResponse.json({ error: "Invalid devotion id" }, { status: 400 });
   }
@@ -63,7 +55,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   const { id } = await context.params;
-  const oid = parseId(id);
+  const oid = parseObjectId(id);
   if (!oid) {
     return NextResponse.json({ error: "Invalid devotion id" }, { status: 400 });
   }
@@ -84,6 +76,16 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  }
+
+  const validationError = validateDevotionInput(
+    updates.title ?? "",
+    updates.passage ?? "",
+    updates.content ?? "",
+    updates.tags ?? []
+  );
+  if (validationError) {
+    return NextResponse.json({ error: validationError }, { status: 400 });
   }
 
   const db = await getDb();
@@ -119,7 +121,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
 
   const { id } = await context.params;
-  const oid = parseId(id);
+  const oid = parseObjectId(id);
   if (!oid) {
     return NextResponse.json({ error: "Invalid devotion id" }, { status: 400 });
   }

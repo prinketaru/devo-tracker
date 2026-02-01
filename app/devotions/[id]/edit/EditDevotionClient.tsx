@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
+import { ExportDevotionModal } from "@/app/components/ExportDevotionModal";
 
 const DevotionWorkspace = dynamic(
   () =>
@@ -36,6 +37,7 @@ export default function EditDevotionClient({ devotionId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [devotion, setDevotion] = useState<DevotionData | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   useEffect(() => {
     fetch(`/api/devotions/${devotionId}`, { credentials: "include" })
@@ -128,12 +130,20 @@ export default function EditDevotionClient({ devotionId }: Props) {
               ← Back to dashboard
             </Link>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setExportOpen(true)}
+                className="rounded-md border border-stone-200 dark:border-zinc-700 px-4 py-2.5 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors min-h-[44px] flex items-center touch-manipulation"
+              >
+                Export
+              </button>
               {error && (
                 <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
               )}
               <button
                 type="button"
                 onClick={handleSave}
+                data-save-devotion
                 className="rounded-md bg-amber-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed min-h-[44px] touch-manipulation"
                 disabled={isSubmitting}
               >
@@ -143,6 +153,20 @@ export default function EditDevotionClient({ devotionId }: Props) {
           </div>
         </div>
 
+        <ExportDevotionModal
+          devotionId={devotionId}
+          devotion={{
+            id: devotion.id,
+            title: devotion.title,
+            passage: devotion.passage,
+            content: devotion.content,
+            date: devotion.date,
+            tags: devotion.tags ?? [],
+            minutesSpent: devotion.minutesSpent,
+          }}
+          isOpen={exportOpen}
+          onClose={() => setExportOpen(false)}
+        />
         <div className="flex-1 min-h-0">
           <DevotionWorkspace
             ref={workspaceRef}

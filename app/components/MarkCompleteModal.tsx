@@ -5,7 +5,7 @@ import { useRef, useState, useEffect } from "react";
 type MarkCompleteModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { title: string; passage: string; content: string }) => Promise<void>;
+  onSave: (data: { title: string; passage: string; content: string; notes?: string }) => Promise<void>;
   initialTitle?: string;
   initialPassage?: string;
 };
@@ -19,6 +19,7 @@ export function MarkCompleteModal({
 }: MarkCompleteModalProps) {
   const titleRef = useRef<HTMLInputElement>(null);
   const passageRef = useRef<HTMLInputElement>(null);
+  const notesRef = useRef<HTMLTextAreaElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,8 +37,9 @@ export function MarkCompleteModal({
     try {
       const title = titleRef.current?.value?.trim() ?? "";
       const passage = passageRef.current?.value?.trim() ?? "";
+      const notes = notesRef.current?.value?.trim() ?? "";
 
-      await onSave({ title, passage, content: "" });
+      await onSave({ title, passage, content: "", notes });
       onClose();
     } catch (err) {
       setError("Failed to save. Please try again.");
@@ -53,7 +55,7 @@ export function MarkCompleteModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="mark-complete-title"
+      aria-labelledby="quick-log-title"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -63,8 +65,8 @@ export function MarkCompleteModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b border-stone-200 dark:border-zinc-800">
-          <h2 id="mark-complete-title" className="text-xl font-semibold text-stone-900 dark:text-stone-100">
-            Mark Today as Complete
+          <h2 id="quick-log-title" className="text-xl font-semibold text-stone-900 dark:text-stone-100">
+            Quick log
           </h2>
           <button
             type="button"
@@ -82,7 +84,7 @@ export function MarkCompleteModal({
           <div className="p-6 space-y-4">
             <label className="flex flex-col gap-1">
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
-                Title
+                Title <span className="font-normal normal-case tracking-normal text-stone-400 dark:text-stone-500">(optional)</span>
               </span>
               <input
                 ref={titleRef}
@@ -94,7 +96,7 @@ export function MarkCompleteModal({
             </label>
             <label className="flex flex-col gap-1">
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
-                Passage
+                Passage <span className="font-normal normal-case tracking-normal text-stone-400 dark:text-stone-500">(optional)</span>
               </span>
               <input
                 ref={passageRef}
@@ -102,6 +104,17 @@ export function MarkCompleteModal({
                 defaultValue={initialPassage}
                 placeholder="e.g. Psalm 23:1-6"
                 className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+                Notes <span className="font-normal normal-case tracking-normal text-stone-400 dark:text-stone-500">(optional)</span>
+              </span>
+              <textarea
+                ref={notesRef}
+                rows={3}
+                placeholder="A brief reflection or prayer..."
+                className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-amber-500/70 resize-none"
               />
             </label>
 
@@ -124,7 +137,7 @@ export function MarkCompleteModal({
               disabled={isSaving}
               className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isSaving ? "Saving..." : "Mark Complete"}
+              {isSaving ? "Saving..." : "Log"}
             </button>
           </div>
         </form>

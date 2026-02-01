@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/app/lib/mongodb";
+import { findUserByAuthId } from "@/app/lib/user-lookup";
 import { sendEmail } from "@/app/lib/smtp2go";
 import { getReminderEmail } from "@/app/lib/email-templates";
 
 const PREFERENCES_COLLECTION = "user_preferences";
-const USER_COLLECTION = "user"; // Better Auth default
 
 function nowInTimezone(timezone: string): { hour: number; minute: number } {
   const str = new Date().toLocaleTimeString("en-CA", {
@@ -31,7 +31,6 @@ export async function POST(request: Request) {
 
   const db = await getDb();
   const prefsColl = db.collection(PREFERENCES_COLLECTION);
-  const userColl = db.collection(USER_COLLECTION);
 
   const prefsDocs = await prefsColl.find({ reminderEmails: true, reminders: { $exists: true, $ne: [] } }).toArray();
   let sent = 0;
@@ -39,20 +38,21 @@ export async function POST(request: Request) {
   for (const doc of prefsDocs) {
     const userId = doc.userId as string;
     const timezone = (doc.timezone as string) || "UTC";
-    const reminders = Array.isArray(doc.reminders) ? doc.reminders as { id: string; time: string }[] : [];
+    const reminders = Array.isArray(doc.reminders) ? (doc.reminders as { id: string; time: string }[]) : [];
     const { hour, minute } = nowInTimezone(timezone);
     const nowHHmm = toHHmm(hour, minute);
 
     const shouldSend = reminders.some((r) => r.time === nowHHmm);
     if (!shouldSend) continue;
 
-    const user = await userColl.findOne({ id: userId }) as { email?: string } | null;
+    const user = await findUserByAuthId(userId);
     const email = user?.email;
     if (!email || typeof email !== "string") continue;
 
     const { subject, text, html } = getReminderEmail();
-    const { ok } = await sendEmail({ to: email, subject, text, html });
-    if (ok) sent++;
+    const res = await sendEmail({ to: email, subject, text, html });
+    if (res.ok) sent++;
+    else if (res.rateLimited) break;
   }
 
   return NextResponse.json({ ok: true, sent });

@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/app/components/ThemeProvider";
 import { ReminderNotifier } from "@/app/components/ReminderNotifier";
 import { ServiceWorkerRegistration } from "@/app/components/ServiceWorkerRegistration";
+import { KeyboardShortcuts } from "@/app/components/KeyboardShortcuts";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,6 +27,14 @@ export const metadata: Metadata = {
   title: "Devo Tracker | Your Daily Devotion Companion",
   description: "Track your daily devotions, build spiritual habits, and grow closer to your faith. Simple, beautiful, and focused on meaningful spiritual growth.",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -49,6 +58,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ServiceWorkerRegistration />
           <ReminderNotifier />
+          <KeyboardShortcuts />
           {children}
         </ThemeProvider>
       </body>

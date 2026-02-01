@@ -10,6 +10,8 @@ import { DevotionCalendar } from "@/app/components/DevotionCalendar";
 import { MarkCompleteButton } from "@/app/components/MarkCompleteButton";
 import { PrayerSection } from "@/app/components/PrayerSection";
 import { UserPreferencesInit } from "@/app/components/UserPreferencesInit";
+import { VerseOfTheDay } from "@/app/components/VerseOfTheDay";
+import { DevotionInsights } from "@/app/components/DevotionInsights";
 
 const PREFERENCES_COLLECTION = "user_preferences";
 
@@ -45,7 +47,7 @@ export default async function DashboardPage() {
               Track daily devotion moments and stay consistent.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <MarkCompleteButton timezone={timezone} todayDevotionId={todayDevotionId} />
             <Link
               href="/devotions/new"
@@ -118,7 +120,8 @@ export default async function DashboardPage() {
           </div>
 
           <div className="space-y-6">
-            <section className="rounded-2xl border border-amber-200 dark:border-amber-400/30 bg-amber-50/70 dark:bg-amber-400/10 p-6 shadow-sm">
+            <VerseOfTheDay />
+            <section className={`rounded-2xl border p-6 shadow-sm ${streak.onGracePeriod ? "border-amber-500/60 dark:border-amber-400/50 bg-amber-100/60 dark:bg-amber-950/40" : "border-amber-200 dark:border-amber-400/30 bg-amber-50/70 dark:bg-amber-400/10"}`}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-200">
@@ -126,13 +129,18 @@ export default async function DashboardPage() {
                   </p>
                   <div className="mt-2 flex items-baseline gap-2">
                     <span className="text-4xl font-semibold text-stone-900 dark:text-stone-50">
-                      {streak.days}
+                      {streak.onGracePeriod ? streak.graceStreakDays : streak.days}
                     </span>
                     <span className="text-sm text-stone-600 dark:text-stone-300">
                       days
                     </span>
+                    {streak.onGracePeriod && (
+                      <span className="ml-2 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-200">
+                        Missed today
+                      </span>
+                    )}
                   </div>
-                  <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
+                  <p className={`mt-2 text-sm ${streak.onGracePeriod ? "font-medium text-amber-800 dark:text-amber-200" : "text-stone-600 dark:text-stone-300"}`}>
                     {streak.message}
                   </p>
                 </div>
@@ -149,6 +157,7 @@ export default async function DashboardPage() {
 
             <PrayerSection />
 
+            <DevotionInsights />
             <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
                 Weekly Stats

@@ -37,6 +37,7 @@ export async function GET() {
     prayerRequests: prayers.map((p) => ({
       text: p.text ?? "",
       status: p.status ?? "active",
+      category: (p as { category?: string }).category ?? "other",
       createdAt: p.createdAt,
     })),
     preferences: prefs
@@ -47,7 +48,7 @@ export async function GET() {
           profileImageUrl: prefs.profileImageUrl,
           reminderEmails: prefs.reminderEmails,
           weeklyDigest: prefs.weeklyDigest,
-          readingPlanProgress: prefs.readingPlanProgress,
+          gracePeriodWarnings: prefs.gracePeriodWarnings,
         }
       : null,
   };
@@ -98,12 +99,14 @@ export async function POST(request: Request) {
   }
 
   if (Array.isArray(body.prayerRequests) && body.prayerRequests.length > 0) {
+    const validCategories = ["family", "health", "ministry", "personal", "other"];
     const toInsert = body.prayerRequests
-      .filter((p): p is { text?: string; status?: string; createdAt?: string } => typeof p === "object" && p !== null)
+      .filter((p): p is { text?: string; status?: string; category?: string; createdAt?: string } => typeof p === "object" && p !== null)
       .map((p) => ({
         userId,
         text: typeof p.text === "string" ? p.text : "",
         status: p.status === "answered" ? "answered" : "active",
+        category: typeof p.category === "string" && validCategories.includes(p.category) ? p.category : "other",
         createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
       }));
     if (toInsert.length) {
@@ -121,7 +124,7 @@ export async function POST(request: Request) {
     if (typeof p.profileImageUrl === "string") updates.profileImageUrl = p.profileImageUrl;
     if (typeof p.reminderEmails === "boolean") updates.reminderEmails = p.reminderEmails;
     if (typeof p.weeklyDigest === "boolean") updates.weeklyDigest = p.weeklyDigest;
-    if (typeof p.readingPlanProgress === "number") updates.readingPlanProgress = p.readingPlanProgress;
+    if (typeof p.gracePeriodWarnings === "boolean") updates.gracePeriodWarnings = p.gracePeriodWarnings;
     if (Object.keys(updates).length > 0) {
       await db.collection(PREFERENCES_COLLECTION).updateOne({ userId }, { $set: updates }, { upsert: true });
       restored.preferences = true;

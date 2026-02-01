@@ -48,7 +48,7 @@ export function Header() {
   return (
     <nav className="border-b border-stone-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/60 backdrop-blur">
       <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3 group">
+        <Link href={session?.user ? "/dashboard" : "/"} className="flex items-center gap-3 group">
           <div className="h-9 w-9 rounded-xl bg-amber-600 text-white flex items-center justify-center text-lg font-semibold shadow-sm group-hover:bg-amber-700 transition-colors">
             D
           </div>

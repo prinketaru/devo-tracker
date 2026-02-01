@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/app/lib/mongodb";
+import { findUserByAuthId } from "@/app/lib/user-lookup";
 import { sendEmail } from "@/app/lib/smtp2go";
 import { getWeeklyDigestEmail } from "@/app/lib/email-templates";
 
 const PREFERENCES_COLLECTION = "user_preferences";
-const USER_COLLECTION = "user";
 const DEVOTIONS_COLLECTION = "devotions";
 
 /** Get start of current week (Sunday) in timezone as YYYY-MM-DD. */
@@ -37,7 +37,6 @@ export async function POST(request: Request) {
 
   const db = await getDb();
   const prefsColl = db.collection(PREFERENCES_COLLECTION);
-  const userColl = db.collection(USER_COLLECTION);
   const devotionsColl = db.collection(DEVOTIONS_COLLECTION);
 
   const prefsDocs = await prefsColl.find({ weeklyDigest: true }).toArray();
@@ -46,7 +45,7 @@ export async function POST(request: Request) {
   for (const doc of prefsDocs) {
     const userId = doc.userId as string;
     const timezone = (doc.timezone as string) || "UTC";
-    const user = await userColl.findOne({ id: userId }) as { email?: string; name?: string } | null;
+    const user = await findUserByAuthId(userId);
     const email = user?.email;
     if (!email || typeof email !== "string") continue;
 
@@ -70,8 +69,9 @@ export async function POST(request: Request) {
     const name = user?.name || "there";
 
     const { subject, text, html } = getWeeklyDigestEmail(name, count, devotions.length);
-    const { ok } = await sendEmail({ to: email, subject, text, html });
-    if (ok) sent++;
+    const res = await sendEmail({ to: email, subject, text, html });
+    if (res.ok) sent++;
+    else if (res.rateLimited) break;
   }
 
   return NextResponse.json({ ok: true, sent });

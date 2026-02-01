@@ -20,9 +20,9 @@ export async function GET() {
   const defaultTemplateMarkdown = doc?.defaultTemplateMarkdown ?? DEFAULT_DEVOTION_TEMPLATE;
   const reminders = Array.isArray(doc?.reminders) ? doc.reminders : [];
   const profileImageUrl = typeof doc?.profileImageUrl === "string" ? doc.profileImageUrl : undefined;
-  const reminderEmails = doc?.reminderEmails === true;
-  const weeklyDigest = doc?.weeklyDigest === true;
-  const readingPlanProgress = typeof doc?.readingPlanProgress === "number" && doc.readingPlanProgress >= 1 && doc.readingPlanProgress <= 365 ? doc.readingPlanProgress : undefined;
+  const reminderEmails = doc?.reminderEmails !== false;
+  const weeklyDigest = doc?.weeklyDigest !== false;
+  const gracePeriodWarnings = doc?.gracePeriodWarnings !== false;
 
   return NextResponse.json({
     timezone,
@@ -31,7 +31,7 @@ export async function GET() {
     profileImageUrl,
     reminderEmails,
     weeklyDigest,
-    readingPlanProgress,
+    gracePeriodWarnings,
     preferencesExist: !!doc,
   });
 }
@@ -43,14 +43,14 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { timezone?: string; defaultTemplateMarkdown?: string; reminders?: { id: string; time: string }[]; profileImageUrl?: string; reminderEmails?: boolean; weeklyDigest?: boolean; readingPlanProgress?: number };
+  let body: { timezone?: string; defaultTemplateMarkdown?: string; reminders?: { id: string; time: string }[]; profileImageUrl?: string; reminderEmails?: boolean; weeklyDigest?: boolean; gracePeriodWarnings?: boolean };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const updates: { timezone?: string; defaultTemplateMarkdown?: string; reminders?: { id: string; time: string }[]; profileImageUrl?: string; reminderEmails?: boolean; weeklyDigest?: boolean; readingPlanProgress?: number } = {};
+  const updates: { timezone?: string; defaultTemplateMarkdown?: string; reminders?: { id: string; time: string }[]; profileImageUrl?: string; reminderEmails?: boolean; weeklyDigest?: boolean; gracePeriodWarnings?: boolean } = {};
   if (typeof body.timezone === "string") updates.timezone = body.timezone;
   if (typeof body.defaultTemplateMarkdown === "string") updates.defaultTemplateMarkdown = body.defaultTemplateMarkdown;
   if (body.profileImageUrl !== undefined) {
@@ -58,7 +58,7 @@ export async function PATCH(request: Request) {
   }
   if (typeof body.reminderEmails === "boolean") updates.reminderEmails = body.reminderEmails;
   if (typeof body.weeklyDigest === "boolean") updates.weeklyDigest = body.weeklyDigest;
-  if (typeof body.readingPlanProgress === "number" && body.readingPlanProgress >= 0 && body.readingPlanProgress <= 365) updates.readingPlanProgress = body.readingPlanProgress;
+  if (typeof body.gracePeriodWarnings === "boolean") updates.gracePeriodWarnings = body.gracePeriodWarnings;
   if (Array.isArray(body.reminders)) {
     updates.reminders = body.reminders.filter(
       (r: unknown): r is { id: string; time: string } =>
@@ -86,14 +86,14 @@ export async function PATCH(request: Request) {
   const profileImageUrl = updates.profileImageUrl !== undefined ? updates.profileImageUrl : (typeof doc?.profileImageUrl === "string" ? doc.profileImageUrl : undefined);
   const reminderEmails = updates.reminderEmails !== undefined ? updates.reminderEmails : doc?.reminderEmails;
   const weeklyDigest = updates.weeklyDigest !== undefined ? updates.weeklyDigest : doc?.weeklyDigest;
-  const readingPlanProgress = updates.readingPlanProgress !== undefined ? updates.readingPlanProgress : doc?.readingPlanProgress;
+  const gracePeriodWarnings = updates.gracePeriodWarnings !== undefined ? updates.gracePeriodWarnings : doc?.gracePeriodWarnings;
   return NextResponse.json({
     timezone: doc?.timezone ?? updates.timezone,
     defaultTemplateMarkdown: doc?.defaultTemplateMarkdown ?? updates.defaultTemplateMarkdown,
     reminders: doc?.reminders ?? updates.reminders ?? [],
     profileImageUrl,
-    reminderEmails: reminderEmails === true,
-    weeklyDigest: weeklyDigest === true,
-    readingPlanProgress: typeof readingPlanProgress === "number" ? readingPlanProgress : undefined,
+    reminderEmails: reminderEmails !== false,
+    weeklyDigest: weeklyDigest !== false,
+    gracePeriodWarnings: gracePeriodWarnings !== false,
   });
 }

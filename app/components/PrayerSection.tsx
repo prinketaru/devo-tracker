@@ -3,10 +3,20 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
+const PRAYER_CATEGORIES = ["family", "health", "ministry", "personal", "other"] as const;
+const CATEGORY_LABELS: Record<string, string> = {
+  family: "Family",
+  health: "Health",
+  ministry: "Ministry",
+  personal: "Personal",
+  other: "Other",
+};
+
 type PrayerRequest = {
   id: string;
   text: string;
   status: "active" | "answered";
+  category?: string;
   createdAt: string;
 };
 
@@ -16,11 +26,16 @@ export function PrayerSection() {
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [newText, setNewText] = useState("");
+  const [newCategory, setNewCategory] = useState("other");
+  const [filterCategory, setFilterCategory] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const fetchRequests = () => {
-    fetch("/api/prayer-requests", { credentials: "include" })
+    const url = filterCategory
+      ? `/api/prayer-requests?category=${encodeURIComponent(filterCategory)}`
+      : "/api/prayer-requests";
+    fetch(url, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : []))
       .then((data: PrayerRequest[]) => setRequests(Array.isArray(data) ? data : []))
       .catch(() => setRequests([]))
@@ -29,7 +44,7 @@ export function PrayerSection() {
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [filterCategory]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +53,7 @@ export function PrayerSection() {
     setSubmitError(null);
     setSubmitting(true);
     try {
-      const body = JSON.stringify({ text, status: "active" });
+      const body = JSON.stringify({ text, status: "active", category: newCategory });
       const res = await fetch("/api/prayer-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -107,7 +122,37 @@ export function PrayerSection() {
         Add requests and mark them answered when God moves.
       </p>
 
-      <form onSubmit={handleAdd} className="mt-4 flex gap-2">
+      {PRAYER_CATEGORIES.length > 1 && (
+        <div className="mt-3 flex flex-wrap gap-1">
+          <button
+            type="button"
+            onClick={() => setFilterCategory("")}
+            className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+              !filterCategory
+                ? "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200"
+                : "bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-zinc-700"
+            }`}
+          >
+            All
+          </button>
+          {PRAYER_CATEGORIES.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setFilterCategory(c)}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors capitalize ${
+                filterCategory === c
+                  ? "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200"
+                  : "bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-zinc-700"
+              }`}
+            >
+              {CATEGORY_LABELS[c] ?? c}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <form onSubmit={handleAdd} className="mt-4 flex flex-col sm:flex-row gap-2">
         <input
           ref={inputRef}
           type="text"
@@ -119,6 +164,17 @@ export function PrayerSection() {
           disabled={submitting}
           autoComplete="off"
         />
+        <select
+          value={newCategory}
+          onChange={(e) => setNewCategory(e.target.value)}
+          className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70 min-w-[100px]"
+        >
+          {PRAYER_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {CATEGORY_LABELS[c] ?? c}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           disabled={!newText.trim() || submitting}
@@ -145,9 +201,14 @@ export function PrayerSection() {
                 key={req.id}
                 className="group flex items-start gap-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
               >
-                <span className="flex-1 text-stone-700 dark:text-stone-200">
+                <span className="flex-1 text-stone-700 dark:text-stone-200 break-words">
                   {req.text}
                 </span>
+                {req.category && req.category !== "other" && (
+                  <span className="shrink-0 rounded-full bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-stone-500 dark:text-stone-400 capitalize">
+                    {CATEGORY_LABELS[req.category] ?? req.category}
+                  </span>
+                )}
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     type="button"
@@ -178,9 +239,14 @@ export function PrayerSection() {
                     key={req.id}
                     className="group flex items-start gap-2 rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-900/50 px-3 py-2 text-sm"
                   >
-                    <span className="flex-1 text-stone-500 dark:text-stone-400 line-through">
+                    <span className="flex-1 text-stone-500 dark:text-stone-400 line-through break-words">
                       {req.text}
                     </span>
+                    {req.category && req.category !== "other" && (
+                      <span className="shrink-0 rounded-full bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-xs font-medium text-stone-500 dark:text-stone-400 capitalize">
+                        {CATEGORY_LABELS[req.category] ?? req.category}
+                      </span>
+                    )}
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         type="button"

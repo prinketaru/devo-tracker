@@ -19,6 +19,9 @@ type DevotionItem = {
   minutesSpent?: number;
 };
 
+/** Shape returned by /api/devotions (includes createdAt). */
+type ApiDevotion = Omit<DevotionItem, "date"> & { createdAt?: string | number };
+
 function summarize(content: string, maxLen = 120): string {
   const text = (content ?? "").trim().replace(/\s+/g, " ");
   if (text.length <= maxLen) return text;
@@ -60,7 +63,7 @@ export default function DevotionsListPage() {
         }
         return res.json();
       })
-      .then((data: { devotions?: DevotionItem[]; total?: number } | null) => {
+      .then((data: { devotions?: ApiDevotion[]; total?: number } | null) => {
         if (!data) return;
         const list = Array.isArray(data.devotions) ? data.devotions : [];
         setDevotions(

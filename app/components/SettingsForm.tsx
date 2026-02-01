@@ -65,24 +65,28 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [profileImageUrlSaving, setProfileImageUrlSaving] = useState(false);
   const [profileImageUrlMessage, setProfileImageUrlMessage] = useState<"success" | "error" | null>(null);
-  const [reminderEmails, setReminderEmails] = useState(false);
-  const [weeklyDigest, setWeeklyDigest] = useState(false);
-  const [readingPlanProgress, setReadingPlanProgress] = useState<number | "">("");
+  const [reminderEmails, setReminderEmails] = useState(true);
+  const [weeklyDigest, setWeeklyDigest] = useState(true);
+  const [gracePeriodWarnings, setGracePeriodWarnings] = useState(true);
   const [restoreMessage, setRestoreMessage] = useState<"success" | "error" | null>(null);
+  const [partnerEmail, setPartnerEmail] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/user/preferences", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data: { timezone?: string; defaultTemplateMarkdown?: string; reminders?: Reminder[]; profileImageUrl?: string; reminderEmails?: boolean; weeklyDigest?: boolean; readingPlanProgress?: number } | null) => {
+      .then((data: { timezone?: string; defaultTemplateMarkdown?: string; reminders?: Reminder[]; profileImageUrl?: string; reminderEmails?: boolean; weeklyDigest?: boolean; gracePeriodWarnings?: boolean } | null) => {
         if (data?.timezone) setTimezone(data.timezone);
         else setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
         if (data?.defaultTemplateMarkdown != null) setTemplateMarkdown(data.defaultTemplateMarkdown);
         else setTemplateMarkdown("");
         if (Array.isArray(data?.reminders)) setReminders(data.reminders);
         if (typeof data?.profileImageUrl === "string") setProfileImageUrl(data.profileImageUrl);
-        if (typeof data?.reminderEmails === "boolean") setReminderEmails(data.reminderEmails);
-        if (typeof data?.weeklyDigest === "boolean") setWeeklyDigest(data.weeklyDigest);
-        if (typeof data?.readingPlanProgress === "number") setReadingPlanProgress(data.readingPlanProgress);
+        setReminderEmails(data?.reminderEmails !== false);
+        setWeeklyDigest(data?.weeklyDigest !== false);
+        setGracePeriodWarnings(data?.gracePeriodWarnings !== false);
       })
       .catch(() => {});
   }, []);
@@ -170,6 +174,16 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
     });
   };
 
+  const handleGracePeriodWarningsChange = async (checked: boolean) => {
+    setGracePeriodWarnings(checked);
+    await fetch("/api/user/preferences", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ gracePeriodWarnings: checked }),
+    });
+  };
+
   const handleWeeklyDigestChange = async (checked: boolean) => {
     setWeeklyDigest(checked);
     await fetch("/api/user/preferences", {
@@ -178,17 +192,6 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
       credentials: "include",
       body: JSON.stringify({ weeklyDigest: checked }),
     });
-  };
-
-  const handleReadingPlanSave = async () => {
-    const val = readingPlanProgress === "" ? 0 : Math.min(365, Math.max(0, Number(readingPlanProgress)));
-    await fetch("/api/user/preferences", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ readingPlanProgress: val }),
-    });
-    setReadingPlanProgress(val || "");
   };
 
   const handleExport = (format: "json" | "markdown") => {
@@ -368,6 +371,18 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
             Choose how the app looks. Your choice is saved.
           </p>
         </label>
+        <div className="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-900/50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
+            Keyboard shortcuts
+          </p>
+          <ul className="text-sm text-stone-600 dark:text-stone-300 space-y-1">
+            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">K</kbd> Search devotions</li>
+            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">N</kbd> New devotion</li>
+            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">D</kbd> Dashboard</li>
+            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">S</kbd> Save (in editor)</li>
+          </ul>
+        </div>
+
         <label className="mt-6 block">
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
             Timezone
@@ -404,9 +419,6 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
             />
             <span className="text-sm text-stone-700 dark:text-stone-200">Also send reminder emails at these times</span>
           </label>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
-            Requires SMTP2GO to be configured. A cron job must call <code className="bg-stone-200 dark:bg-zinc-700 px-1 rounded">/api/cron/send-reminder-emails</code> every 5–15 minutes.
-          </p>
           <label className="mt-2 flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -416,8 +428,20 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
             />
             <span className="text-sm text-stone-700 dark:text-stone-200">Send weekly summary email</span>
           </label>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+            Get a weekly summary (e.g. days completed, streak).
+          </p>
+          <label className="mt-4 flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={gracePeriodWarnings}
+              onChange={(e) => handleGracePeriodWarningsChange(e.target.checked)}
+              className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
+            />
+            <span className="text-sm text-stone-700 dark:text-stone-200">Warn when you miss a day (email + notification)</span>
+          </label>
           <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
-            Get a weekly summary (e.g. days completed, streak). Cron must call <code className="bg-stone-200 dark:bg-zinc-700 px-1 rounded">/api/cron/send-weekly-digest</code> (e.g. Sunday evening).
+            Email and push notification when you miss a day and risk breaking your streak.
           </p>
           <form onSubmit={handleAddReminder} className="flex gap-2 mt-6">
             <input
@@ -464,6 +488,72 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
 
       <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
+          Accountability partner
+        </h2>
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
+          Invite someone to see if you completed your devotion today (streak + completed today only—no devotion content).
+        </p>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const email = partnerEmail.trim().toLowerCase();
+            if (!email || inviteLoading) return;
+            setInviteLoading(true);
+            setInviteSuccess(null);
+            setInviteError(null);
+            try {
+              const res = await fetch("/api/accountability/invite", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ email }),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (res.ok) {
+                setInviteSuccess((data as { inviteUrl?: string }).inviteUrl ?? "Invite sent!");
+                setPartnerEmail("");
+              } else {
+                setInviteError((data as { error?: string }).error ?? "Failed to send invite");
+              }
+            } catch {
+              setInviteError("Network error.");
+            } finally {
+              setInviteLoading(false);
+            }
+          }}
+          className="mt-4 flex gap-2"
+        >
+          <input
+            type="email"
+            value={partnerEmail}
+            onChange={(e) => setPartnerEmail(e.target.value)}
+            placeholder="partner@example.com"
+            className="flex-1 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-amber-500/70"
+            disabled={inviteLoading}
+          />
+          <button
+            type="submit"
+            disabled={!partnerEmail.trim() || inviteLoading}
+            className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {inviteLoading ? "Sending…" : "Invite"}
+          </button>
+        </form>
+        {inviteSuccess && (
+          <p className="mt-3 text-sm text-green-600 dark:text-green-400">
+            Invite sent! Share this link:{" "}
+            <a href={inviteSuccess} target="_blank" rel="noopener noreferrer" className="underline break-all">
+              {inviteSuccess}
+            </a>
+          </p>
+        )}
+        {inviteError && (
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">{inviteError}</p>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
           Data &amp; backup
         </h2>
         <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
@@ -498,31 +588,6 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
         </div>
         {restoreMessage === "success" && <p className="mt-2 text-sm text-green-600 dark:text-green-400">Restore completed.</p>}
         {restoreMessage === "error" && <p className="mt-2 text-sm text-red-600 dark:text-red-400">Restore failed. Check file format.</p>}
-        <div className="mt-6">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
-            Reading plan (Bible-in-a-year day)
-          </span>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-2">
-            Optional. Set your current day (1–365) to track progress.
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              max={365}
-              value={readingPlanProgress === "" ? "" : readingPlanProgress}
-              onChange={(e) => setReadingPlanProgress(e.target.value === "" ? "" : parseInt(e.target.value, 10))}
-              className="w-24 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
-            />
-            <button
-              type="button"
-              onClick={handleReadingPlanSave}
-              className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
-            >
-              Save
-            </button>
-          </div>
-        </div>
       </section>
 
       <section className="rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 p-6 shadow-sm">

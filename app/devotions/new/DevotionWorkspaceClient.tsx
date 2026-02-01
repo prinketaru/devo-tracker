@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import { UserPreferencesInit } from "@/app/components/UserPreferencesInit";
+import { OfflineBanner, saveOfflineDraft, clearOfflineDraft } from "@/app/components/OfflineBanner";
 import { DEFAULT_DEVOTION_TEMPLATE } from "@/app/lib/default-devotion-template";
 
 const DevotionWorkspace = dynamic(
@@ -60,12 +61,18 @@ export default function DevotionWorkspaceClient() {
         }),
       });
       if (res.ok) {
+        clearOfflineDraft();
         router.push("/dashboard");
         router.refresh();
         return;
       }
+      if (res.status === 503 || !navigator.onLine) {
+        saveOfflineDraft({ title: values.title, passage: values.passage, content: values.content });
+      }
     } catch {
-      // fall through to re-enable button
+      if (!navigator.onLine && values) {
+        saveOfflineDraft({ title: values.title, passage: values.passage, content: values.content });
+      }
     }
     setIsSubmitting(false);
   };
@@ -73,6 +80,7 @@ export default function DevotionWorkspaceClient() {
   return (
     <main className="h-svh bg-stone-50 dark:bg-zinc-950">
       <UserPreferencesInit />
+      <OfflineBanner />
       <div className="h-full flex flex-col">
         <div className="border-b border-stone-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/50 backdrop-blur safe-area-x">
           <div className="mx-auto w-full max-w-none px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2">

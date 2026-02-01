@@ -1,12 +1,49 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { emailOTP } from "better-auth/plugins/email-otp";
 import { getDb, getMongoClient } from "./mongodb";
+import { sendEmail } from "./smtp2go";
+import { getOtpEmail } from "./email-templates";
+import { checkOtpLimit, recordOtpSent } from "./rate-limits";
 
 const client = await getMongoClient();
 const db = await getDb();
 
+const baseUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
 export const auth = betterAuth({
   database: mongodbAdapter(db, { client }),
+  trustedOrigins: [baseUrl],
+
+  plugins: [
+    emailOTP({
+      async sendVerificationOTP({ email, otp, type }) {
+        const otpLimit = await checkOtpLimit(email);
+        if (!otpLimit.allowed) {
+          throw new Error(otpLimit.reason);
+        }
+        const { subject, text, html } = getOtpEmail(otp, type);
+        const { ok } = await sendEmail({ to: email, subject, text, html });
+        if (ok) {
+          await recordOtpSent(email);
+        }
+      },
+    }),
+  ],
+
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          // For email OTP sign-in, name is empty; use email prefix as default
+          if ((!user.name || user.name.trim() === "") && typeof user.email === "string") {
+            const prefix = user.email.split("@")[0]?.trim();
+            if (prefix) return { data: { name: prefix } };
+          }
+        },
+      },
+    },
+  },
 
   user: {
     deleteUser: {

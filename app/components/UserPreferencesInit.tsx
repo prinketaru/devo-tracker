@@ -25,7 +25,12 @@ export function UserPreferencesInit() {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ timezone: detectedTimezone }),
+            body: JSON.stringify({
+              timezone: detectedTimezone,
+              reminderEmails: true,
+              weeklyDigest: true,
+              gracePeriodWarnings: true,
+            }),
           }).then((patchRes) => {
             if (patchRes.ok) router.refresh();
           });

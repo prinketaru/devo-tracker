@@ -1,11 +1,14 @@
-import { MongoClient, Db } from "mongodb";
+/**
+ * MongoDB connection for Devo Tracker.
+ * Uses MONGO_URI from env; caches client for serverless.
+ */
+
+import { MongoClient, Db, ObjectId } from "mongodb";
 
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  throw new Error(
-    "Please define the MONGO_URI environment variable inside .env"
-  );
+  throw new Error("Please define the MONGO_URI environment variable inside .env");
 }
 
 declare global {
@@ -13,10 +16,7 @@ declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-/**
- * Cached MongoDB client promise. Reused across hot reloads in development
- * and across serverless invocations in production.
- */
+/** Cached MongoDB client promise. Reused across hot reloads (dev) and serverless (prod). */
 let clientPromise: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === "development") {
@@ -42,6 +42,16 @@ export async function getMongoClient(): Promise<MongoClient> {
 export async function getDb(dbName = "devo-tracker"): Promise<Db> {
   const client = await getMongoClient();
   return client.db(dbName);
+}
+
+/** Parse a 24-char hex string to ObjectId, or return null if invalid. */
+export function parseObjectId(id: string): ObjectId | null {
+  if (!id || id.length !== 24 || !/^[a-f0-9]{24}$/i.test(id)) return null;
+  try {
+    return new ObjectId(id);
+  } catch {
+    return null;
+  }
 }
 
 export { clientPromise };

@@ -1,10 +1,17 @@
-const CACHE_NAME = "devo-tracker-v1";
+const CACHE_NAME = "devo-tracker-v3";
+
+const PRECACHE_URLS = [
+  "/",
+  "/manifest.webmanifest",
+  "/favicon.ico",
+  "/android-chrome-192x192.png",
+];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
-      cache.addAll(["/", "/manifest.webmanifest", "/favicon.ico"])
+      cache.addAll(PRECACHE_URLS.map((u) => self.location.origin + u))
     )
   );
 });
@@ -37,6 +44,18 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET" || !event.request.url.startsWith(self.location.origin)) return;
+  if (!event.request.url.includes("/api/")) return;
+
+  event.respondWith(
+    fetch(event.request).catch(() => new Response(JSON.stringify({ error: "Offline" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    }))
+  );
+}, { capture: true });
+
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   let payload = { title: "Devo Tracker", body: "Time for your devotion." };
@@ -48,8 +67,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title || "Devo Tracker", {
       body: payload.body,
-      icon: "/favicon.ico",
-      badge: "/favicon.ico",
+      icon: "/android-chrome-192x192.png",
+      badge: "/android-chrome-192x192.png",
       tag: "devo-reminder",
       data: { url: payload.url || "/dashboard" },
     })

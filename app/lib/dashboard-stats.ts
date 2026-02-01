@@ -15,7 +15,7 @@ export type DevotionSummary = {
 export type DashboardData = {
   devotions: DevotionSummary[];
   weeklyStats: { label: string; value: string }[];
-  streak: { days: number; best: number; message: string };
+  streak: { days: number; best: number; message: string; onGracePeriod?: boolean; graceStreakDays?: number };
   todayDevotionId?: string;
 };
 
@@ -26,38 +26,59 @@ function summarize(content: string, maxLen = 120): string {
   return text.slice(0, maxLen).trim() + "…";
 }
 
-/** Compute consecutive-day streak and best streak from devotion dates (UTC date strings). */
-function computeStreak(dates: Date[]): { current: number; best: number } {
-  if (dates.length === 0) return { current: 0, best: 0 };
+/** Grace period: allow 1 missed day without breaking the streak. Miss 2+ days and streak ends. */
+const STREAK_GRACE_DAYS = 1;
+
+/** Get yesterday's date string in timezone (YYYY-MM-DD). */
+function getYesterdayStr(timezone: string): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return toDateStringInTimezone(d, timezone);
+}
+
+/** Compute consecutive-day streak and best streak. Uses user timezone. Ends streak if gap > 1 + grace. */
+function computeStreak(
+  dates: Date[],
+  timezone: string
+): { current: number; best: number; onGracePeriod: boolean; graceStreakDays: number } {
+  if (dates.length === 0) return { current: 0, best: 0, onGracePeriod: false, graceStreakDays: 0 };
 
   const uniqueDays = Array.from(
-    new Set(dates.map((d) => d.toISOString().slice(0, 10)))
+    new Set(dates.map((d) => toDateStringInTimezone(d, timezone)))
   ).sort()
     .reverse();
 
+  const todayStr = toDateStringInTimezone(new Date(), timezone);
+  const yesterdayStr = getYesterdayStr(timezone);
   let current = 0;
   let best = 0;
   let run = 1;
-
-  const today = new Date().toISOString().slice(0, 10);
-  let countingCurrent = uniqueDays[0] === today;
+  let countingCurrent = uniqueDays[0] === todayStr;
+  let onGracePeriod = false;
+  let graceStreakDays = 0;
 
   for (let i = 0; i < uniqueDays.length; i++) {
     if (i > 0) {
-      const prev = new Date(uniqueDays[i - 1]);
-      const curr = new Date(uniqueDays[i]);
+      const prev = new Date(uniqueDays[i - 1] + "T12:00:00");
+      const curr = new Date(uniqueDays[i] + "T12:00:00");
       const diffDays = Math.round((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays === 1) run++;
+      // Consecutive (1) or within grace (2 = 1 missed day): continue streak. Otherwise: break.
+      if (diffDays >= 1 && diffDays <= 1 + STREAK_GRACE_DAYS) run++;
       else run = 1;
     }
     best = Math.max(best, run);
     if (countingCurrent) current = run;
-    if (uniqueDays[i] !== today && countingCurrent) countingCurrent = false;
+    // On grace: most recent devotion was yesterday, streak at risk
+    if (uniqueDays[0] === yesterdayStr && run > 0) {
+      onGracePeriod = true;
+      graceStreakDays = run;
+    }
+    if (uniqueDays[i] !== todayStr && countingCurrent) countingCurrent = false;
   }
 
   if (countingCurrent) current = run;
 
-  return { current, best };
+  return { current, best, onGracePeriod, graceStreakDays };
 }
 
 /**
@@ -112,6 +133,25 @@ function getWeekStartDateString(timezone: string): string {
   return `${sundayYear}-${String(sundayMonth).padStart(2, "0")}-${String(sundayDayFinal).padStart(2, "0")}`;
 }
 
+/** Get grace period status for a user (for API/cron use). */
+export async function getGraceStatus(
+  userId: string,
+  timezone: string
+): Promise<{ onGracePeriod: boolean; graceStreakDays: number }> {
+  const db = await getDb();
+  const docs = await db
+    .collection(DEVOTIONS_COLLECTION)
+    .find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .toArray();
+  const allDates = docs.map((d) =>
+    d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt)
+  );
+  const { onGracePeriod, graceStreakDays } = computeStreak(allDates, timezone);
+  return { onGracePeriod, graceStreakDays };
+}
+
 /** Fetch dashboard data for a user: recent devotions, weekly stats, streak. */
 export async function getDashboardData(userId: string, timezone?: string): Promise<DashboardData> {
   const db = await getDb();
@@ -135,7 +175,10 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
       title: (d.title ?? "").trim() || "Untitled",
       passage: (d.passage ?? "").trim() || "—",
       summary: summarize(d.content ?? ""),
-      minutesSpent: typeof (d as { minutesSpent?: number }).minutesSpent === "number" ? (d as { minutesSpent: number }).minutesSpent : undefined,
+      minutesSpent: (() => {
+        const mins = (d as { minutesSpent?: unknown }).minutesSpent;
+        return typeof mins === "number" ? mins : undefined;
+      })(),
     };
   });
 
@@ -167,7 +210,10 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
     return dateStr >= weekStartStr && dateStr < weekEndStr;
   });
   const minutesThisWeek = thisWeekDocs
-    .map((d) => (typeof (d as { minutesSpent?: number }).minutesSpent === "number" ? (d as { minutesSpent: number }).minutesSpent : null))
+    .map((d) => {
+      const mins = (d as { minutesSpent?: unknown }).minutesSpent;
+      return typeof mins === "number" ? mins : null;
+    })
     .filter((m): m is number => m != null);
   const avgMinutes = minutesThisWeek.length > 0
     ? Math.round(minutesThisWeek.reduce((a, b) => a + b, 0) / minutesThisWeek.length)
@@ -177,16 +223,19 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
     { label: "Avg. time", value: avgMinutes != null ? `${avgMinutes} min` : "—" },
   ];
 
-  const { current: streakDays, best: bestStreak } = computeStreak(allDates);
+  const { current: streakDays, best: bestStreak, onGracePeriod, graceStreakDays } = computeStreak(allDates, userTimezone);
 
   const streakMessages = [
     "Keep going — you're building consistency.",
     "You're on a roll!",
     "Strong streak. One day at a time.",
   ];
-  const message = streakDays > 0
-    ? streakMessages[Math.min(streakDays - 1, streakMessages.length - 1)]
-    : "Log a devotion to start your streak.";
+  const message =
+    onGracePeriod
+      ? "You missed today — do a devotion to keep your streak!"
+      : streakDays > 0
+        ? streakMessages[Math.min(streakDays - 1, streakMessages.length - 1)]
+        : "Log a devotion to start your streak.";
 
   // Check if today already has a devotion
   const todayStr = toDateStringInTimezone(new Date(), userTimezone);
@@ -204,6 +253,8 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
       days: streakDays,
       best: bestStreak,
       message,
+      onGracePeriod,
+      graceStreakDays,
     },
     todayDevotionId,
   };

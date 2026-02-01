@@ -39,6 +39,12 @@ export async function GET(request: NextRequest) {
 
     if (!res.ok) {
       const text = await res.text();
+      if (res.status === 429) {
+        return NextResponse.json(
+          { error: "Bible API rate limit reached. Please try again in a few minutes." },
+          { status: 429, headers: res.headers.get("retry-after") ? { "Retry-After": res.headers.get("retry-after")! } : undefined }
+        );
+      }
       return NextResponse.json(
         { error: text || `ESV API error: ${res.status}` },
         { status: res.status >= 500 ? 502 : res.status }

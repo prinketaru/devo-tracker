@@ -15,6 +15,7 @@ type PrayerRequest = {
   id: string;
   text: string;
   status: "active" | "answered";
+  category?: string;
 };
 
 type DevotionWorkspaceProps = {
@@ -100,7 +101,7 @@ export const DevotionWorkspace = forwardRef<
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ text, status: "active" }),
+        body: JSON.stringify({ text, status: "active", category: "other" }),
       });
       if (res.ok) {
         setNewPrayerText("");
@@ -358,7 +359,7 @@ export const DevotionWorkspace = forwardRef<
                     value={passageQuery}
                     onChange={(e) => setPassageQuery(e.target.value)}
                     placeholder="e.g. John 3:16, Psalm 23, Genesis 1-3"
-                    className="flex-1 min-w-0 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 text-base sm:text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-amber-500/70 min-h-[44px]"
+                    className="flex-1 min-w-0 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 text-base sm:text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 outline-none focus:ring-1 focus:ring-inset focus:ring-amber-500/70 min-h-[44px]"
                     disabled={passageLoading}
                   />
                   <button
@@ -415,7 +416,7 @@ export const DevotionWorkspace = forwardRef<
                   value={newPrayerText}
                   onChange={(e) => setNewPrayerText(e.target.value)}
                   placeholder="Add a prayer request..."
-                  className="flex-1 min-w-0 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 text-base sm:text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 outline-none focus:ring-1 focus:ring-amber-500/70 min-h-[44px]"
+                  className="flex-1 min-w-0 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 text-base sm:text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 outline-none focus:ring-1 focus:ring-amber-500/70 min-h-[44px]"
                   disabled={addingPrayer}
                 />
                 <button

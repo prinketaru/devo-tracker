@@ -74,6 +74,76 @@ function emailWrapper(content: string): string {
 </html>`;
 }
 
+export const OTP_SIGNIN_SUBJECT = "Devo Tracker – Your sign-in code";
+
+export function getOtpEmail(otp: string, type: "sign-in" | "email-verification" | "forget-password"): { subject: string; text: string; html: string } {
+  const content =
+    type === "sign-in"
+      ? `Sign in to Devo Tracker`
+      : type === "email-verification"
+        ? `Verify your email address`
+        : `Reset your password`;
+  const text = `Your verification code is: ${otp}\n\nThis code expires in 10 minutes. If you didn't request this, you can safely ignore this email.`;
+  const contentHtml = `
+    <h2 style="margin:0 0 12px; font-size:22px; font-weight:600; font-family:${STYLES.fontSerif}; color:${STYLES.text};">
+      ${content}
+    </h2>
+    <p style="margin:0 0 20px; color:${STYLES.text}; line-height:1.65;">
+      Your verification code is:
+    </p>
+    <p style="margin:0 0 20px; font-size:28px; font-weight:700; letter-spacing:0.2em; color:${STYLES.accent}; font-family:${STYLES.fontSans};">
+      ${otp}
+    </p>
+    <p style="margin:0; font-size:13px; color:${STYLES.muted};">
+      This code expires in 10 minutes. If you didn&apos;t request this, you can safely ignore this email.
+    </p>
+  `;
+  return {
+    subject: OTP_SIGNIN_SUBJECT,
+    text,
+    html: emailWrapper(contentHtml.trim()),
+  };
+}
+
+export const GRACE_PERIOD_SUBJECT = "Devo Tracker – You missed a day";
+
+export function getGracePeriodEmail(graceStreakDays: number): { subject: string; text: string; html: string } {
+  const baseUrl = getBaseUrl();
+  const startUrl = `${baseUrl}/devotions/new`;
+
+  const footerText = getUnsubscribeFooter().text;
+  const text = `You missed a day — do a devotion to keep your ${graceStreakDays}-day streak! ✨
+
+Your streak is at risk. Log a devotion today to keep it going.
+
+Start your devotion: ${startUrl}
+
+${footerText}`;
+
+  const content = `
+    <h2 style="margin:0 0 12px; font-size:22px; font-weight:600; font-family:${STYLES.fontSerif}; color:${STYLES.text};">
+      You missed a day — keep your streak! ✨
+    </h2>
+    <p style="margin:0 0 20px; color:${STYLES.text}; line-height:1.65;">
+      Your ${graceStreakDays}-day streak is at risk. Log a devotion today to keep it going.
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0">
+      <tr>
+        <td>
+          <a href="${startUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:14px 24px; background:${STYLES.accent}; color:#fff !important; font-size:15px; font-weight:600; text-decoration:none; border-radius:8px;">
+            Start your devotion
+          </a>
+        </td>
+      </tr>
+    </table>
+  `;
+  return {
+    subject: GRACE_PERIOD_SUBJECT,
+    text,
+    html: emailWrapper(content.trim()),
+  };
+}
+
 export const REMINDER_SUBJECT = "Devo Tracker – Time for your devotion";
 
 export function getReminderEmail(): { subject: string; text: string; html: string } {
