@@ -46,7 +46,7 @@ export default async function SharedDevotionPage({ params }: Props) {
               )}
             </p>
           </header>
-          <div className="prose prose-stone dark:prose-invert max-w-none text-base leading-relaxed">
+          <div className="devotion-notes prose prose-stone dark:prose-invert max-w-none text-base leading-relaxed">
             <ReactMarkdown>{devotion.content}</ReactMarkdown>
           </div>
           <footer className="mt-10 pt-6 border-t border-stone-200 dark:border-zinc-800">

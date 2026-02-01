@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type ShareDevotionModalProps = {
   devotionId: string;
@@ -11,8 +11,25 @@ type ShareDevotionModalProps = {
 export function ShareDevotionModal({ devotionId, isOpen, onClose }: ShareDevotionModalProps) {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setLoading(true);
+      fetch(`/api/devotions/${devotionId}/share`, { credentials: "include" })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: { shareUrl?: string | null } | null) => {
+          setShareUrl(data?.shareUrl ?? null);
+        })
+        .catch(() => setShareUrl(null))
+        .finally(() => setLoading(false));
+    } else {
+      setShareUrl(null);
+    }
+  }, [isOpen, devotionId]);
 
   const fetchShareLink = async () => {
     if (shareUrl) return shareUrl;
@@ -71,8 +88,8 @@ export function ShareDevotionModal({ devotionId, isOpen, onClose }: ShareDevotio
           <input
             type="text"
             readOnly
-            value={shareUrl ?? (loading ? "Creating link…" : "")}
-            placeholder="Click to create link"
+            value={shareUrl ?? (loading ? "Loading…" : "")}
+            placeholder={loading ? "" : "Click to create link"}
             className="flex-1 rounded-md border border-stone-200 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 truncate"
           />
           <button
@@ -89,6 +106,30 @@ export function ShareDevotionModal({ devotionId, isOpen, onClose }: ShareDevotio
           >
             {copied ? "Copied!" : shareUrl ? "Copy" : loading ? "..." : "Create link"}
           </button>
+          {shareUrl && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (deleteLoading) return;
+                setDeleteLoading(true);
+                try {
+                  const res = await fetch(`/api/devotions/${devotionId}/share`, {
+                    method: "DELETE",
+                    credentials: "include",
+                  });
+                  if (res.ok) {
+                    setShareUrl(null);
+                  }
+                } finally {
+                  setDeleteLoading(false);
+                }
+              }}
+              disabled={deleteLoading}
+              className="rounded-md border border-red-200 dark:border-red-800 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-50 shrink-0"
+            >
+              {deleteLoading ? "Deleting…" : "Delete"}
+            </button>
+          )}
         </div>
 
         <div className="mt-6 flex justify-end">

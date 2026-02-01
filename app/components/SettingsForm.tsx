@@ -72,6 +72,17 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [partners, setPartners] = useState<{ id: string; email: string; status: string }[]>([]);
+  const [revokeLoading, setRevokeLoading] = useState<string | null>(null);
+
+  const fetchPartners = () => {
+    fetch("/api/accountability/partners", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { partners?: { id: string; email: string; status: string }[] } | null) => {
+        setPartners(Array.isArray(data?.partners) ? data.partners : []);
+      })
+      .catch(() => setPartners([]));
+  };
 
   useEffect(() => {
     fetch("/api/user/preferences", { credentials: "include" })
@@ -88,6 +99,7 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
         setGracePeriodWarnings(data?.gracePeriodWarnings !== false);
       })
       .catch(() => {});
+    fetchPartners();
   }, []);
 
   const saveReminders = async (next: Reminder[]) => {
@@ -461,6 +473,7 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
               if (res.ok) {
                 setInviteSuccess((data as { inviteUrl?: string }).inviteUrl ?? "Invite sent!");
                 setPartnerEmail("");
+                fetchPartners();
               } else {
                 setInviteError((data as { error?: string }).error ?? "Failed to send invite");
               }
@@ -498,6 +511,48 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
         )}
         {inviteError && (
           <p className="mt-3 text-sm text-red-600 dark:text-red-400">{inviteError}</p>
+        )}
+        {partners.length > 0 && (
+          <div className="mt-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-2">
+              Current partners
+            </p>
+            <ul className="space-y-2">
+              {partners.map((p) => (
+                <li
+                  key={p.id}
+                  className="flex items-center justify-between rounded-lg border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-700 dark:text-stone-200"
+                >
+                  <span>{p.email}</span>
+                  <span className="text-xs text-stone-500 dark:text-stone-400 mr-2">
+                    {p.status === "accepted" ? "Accepted" : "Pending"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (revokeLoading) return;
+                      setRevokeLoading(p.id);
+                      try {
+                        const res = await fetch(`/api/accountability/partners/${p.id}`, {
+                          method: "DELETE",
+                          credentials: "include",
+                        });
+                        if (res.ok) {
+                          setPartners((prev) => prev.filter((x) => x.id !== p.id));
+                        }
+                      } finally {
+                        setRevokeLoading(null);
+                      }
+                    }}
+                    disabled={revokeLoading === p.id}
+                    className="rounded px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
+                  >
+                    {revokeLoading === p.id ? "Revoking…" : "Revoke"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </section>
 

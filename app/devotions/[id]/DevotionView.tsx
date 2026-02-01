@@ -80,7 +80,7 @@ export function DevotionView({ devotion }: { devotion: Devotion }) {
         </div>
       </header>
 
-      <div className="prose prose-stone dark:prose-invert max-w-none text-base leading-relaxed">
+      <div className="devotion-notes prose prose-stone dark:prose-invert max-w-none text-base leading-relaxed">
         {devotion.content ? (
           <ReactMarkdown>{devotion.content}</ReactMarkdown>
         ) : (

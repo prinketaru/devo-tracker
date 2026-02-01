@@ -16,6 +16,38 @@ function generateShareToken(): string {
   return token;
 }
 
+/** GET /api/devotions/[id]/share – get existing share link if one exists. */
+export async function GET(_request: Request, context: RouteContext) {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+  const oid = parseObjectId(id);
+  if (!oid) {
+    return NextResponse.json({ error: "Invalid devotion id" }, { status: 400 });
+  }
+
+  const db = await getDb();
+  const doc = await db
+    .collection(DEVOTIONS_COLLECTION)
+    .findOne({ _id: oid, userId: session.user.id }, { projection: { shareToken: 1 } });
+
+  if (!doc) {
+    return NextResponse.json({ error: "Devotion not found" }, { status: 404 });
+  }
+
+  const token = doc.shareToken as string | undefined;
+  if (!token) {
+    return NextResponse.json({ shareUrl: null });
+  }
+
+  const baseUrl = process.env.BETTER_AUTH_URL || (typeof process.env.VERCEL_URL === "string" ? `https://${process.env.VERCEL_URL}` : null) || "http://localhost:3000";
+  const shareUrl = `${baseUrl}/share/${token}`;
+  return NextResponse.json({ shareUrl });
+}
+
 /** POST /api/devotions/[id]/share – generate a share link for the devotion. */
 export async function POST(_request: Request, context: RouteContext) {
   const session = await getSession();

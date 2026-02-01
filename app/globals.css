@@ -142,6 +142,16 @@ h6 {
   font-family: var(--font-playfair), "Playfair Display", "Times New Roman", serif;
 }
 
+/* Devotion notes: use Inter for headings (match body text) */
+.devotion-notes h1,
+.devotion-notes h2,
+.devotion-notes h3,
+.devotion-notes h4,
+.devotion-notes h5,
+.devotion-notes h6 {
+  font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
+}
+
 .devotion-editor {
   color: var(--foreground);
   height: 100%;

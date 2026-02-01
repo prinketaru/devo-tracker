@@ -54,7 +54,7 @@ export function PrintDevotionClient({ devotion }: { devotion: Devotion }) {
             </p>
           )}
         </header>
-        <div className="prose prose-stone max-w-none text-base leading-relaxed">
+        <div className="devotion-notes prose prose-stone max-w-none text-base leading-relaxed">
           <ReactMarkdown>{devotion.content}</ReactMarkdown>
         </div>
         <footer className="mt-12 pt-4 border-t border-stone-200 text-xs text-stone-500">
