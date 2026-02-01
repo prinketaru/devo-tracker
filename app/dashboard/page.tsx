@@ -37,8 +37,28 @@ export default async function DashboardPage() {
       <UserPreferencesInit />
       <Header />
       <div className="max-w-5xl mx-auto px-6 py-12">
-        {/* Verse of the Day + Current Streak - side by side at top */}
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-stone-900 dark:text-stone-50">
+              Your Devotion Dashboard
+            </h1>
+            <p className="text-sm text-stone-600 dark:text-stone-300">
+              Track daily devotion moments and stay consistent.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <MarkCompleteButton timezone={timezone} todayDevotionId={todayDevotionId} />
+            <Link
+              href="/devotions/new"
+              className="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
+            >
+              Start Today&apos;s Devotion
+            </Link>
+          </div>
+        </div>
+
+        {/* Verse of the Day + Current Streak */}
+        <div className="mt-8 grid gap-6 sm:grid-cols-2">
           <VerseOfTheDay />
           <section className={`rounded-2xl border-2 p-6 shadow-lg ${streak.onGracePeriod ? "border-amber-500/60 dark:border-amber-400/50 bg-amber-100/60 dark:bg-amber-950/40" : "border-amber-300 dark:border-amber-500/40 bg-amber-50/70 dark:bg-amber-400/10"}`}>
           <div className="flex items-start justify-between gap-4">
@@ -75,30 +95,10 @@ export default async function DashboardPage() {
           </section>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold text-stone-900 dark:text-stone-50">
-              Your Devotion Dashboard
-            </h1>
-            <p className="text-sm text-stone-600 dark:text-stone-300">
-              Track daily devotion moments and stay consistent.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-            <MarkCompleteButton timezone={timezone} todayDevotionId={todayDevotionId} />
-            <Link
-              href="/devotions/new"
-              className="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
-            >
-              Start Today&apos;s Devotion
-            </Link>
-          </div>
-        </div>
-
         {!hasReminders && (
           <Link
             href="/settings"
-            className="mt-8 block rounded-2xl border border-amber-200 dark:border-amber-500/40 bg-amber-50/80 dark:bg-amber-950/30 p-5 shadow-sm hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors"
+            className="mt-10 block rounded-2xl border border-amber-200 dark:border-amber-500/40 bg-amber-50/80 dark:bg-amber-950/30 p-5 shadow-sm hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>

@@ -18,9 +18,7 @@ type Reminder = { id: string; time: string };
 
 function formatReminderTime(time: string): string {
   const [h, m] = time.split(":").map(Number);
-  const hour = h % 12 || 12;
-  const ampm = h < 12 ? "AM" : "PM";
-  return `${hour}:${m.toString().padStart(2, "0")} ${ampm}`;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 const COMMON_TIMEZONES = [
@@ -60,7 +58,8 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [templateMarkdown, setTemplateMarkdown] = useState<string | null>(null);
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [newReminderTime, setNewReminderTime] = useState("");
+  const [newReminderHour, setNewReminderHour] = useState(9);
+  const [newReminderMinute, setNewReminderMinute] = useState(0);
   const [remindersSaving, setRemindersSaving] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const [profileImageUrlSaving, setProfileImageUrlSaving] = useState(false);
@@ -108,12 +107,10 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
 
   const handleAddReminder = (e: React.FormEvent) => {
     e.preventDefault();
-    const time = newReminderTime.trim();
-    if (!time || !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time)) return;
+    const time = `${String(newReminderHour).padStart(2, "0")}:${String(newReminderMinute).padStart(2, "0")}`;
     const id = crypto.randomUUID();
     const next = [...reminders, { id, time }].sort((a, b) => a.time.localeCompare(b.time));
     setReminders(next);
-    setNewReminderTime("");
     saveReminders(next);
   };
 
@@ -380,14 +377,30 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
           />
           <span className="text-sm text-stone-700 dark:text-stone-200">Warn when you miss a day (email + notification)</span>
         </label>
-        <form onSubmit={handleAddReminder} className="flex gap-2 mt-4">
-          <input
-            type="time"
-            value={newReminderTime}
-            onChange={(e) => setNewReminderTime(e.target.value)}
-            className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70"
-            required
-          />
+        <form onSubmit={handleAddReminder} className="flex flex-wrap items-center gap-2 mt-4">
+          <select
+            value={newReminderHour}
+            onChange={(e) => setNewReminderHour(Number(e.target.value))}
+            className="reminder-time-select rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none"
+          >
+            {Array.from({ length: 24 }, (_, i) => (
+              <option key={i} value={i}>
+                {String(i).padStart(2, "0")}
+              </option>
+            ))}
+          </select>
+          <span className="text-stone-500 dark:text-stone-400 font-medium">:</span>
+          <select
+            value={newReminderMinute}
+            onChange={(e) => setNewReminderMinute(Number(e.target.value))}
+            className="reminder-time-select rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none"
+          >
+            {Array.from({ length: 60 }, (_, i) => (
+              <option key={i} value={i}>
+                {String(i).padStart(2, "0")}
+              </option>
+            ))}
+          </select>
           <button
             type="submit"
             disabled={remindersSaving}
