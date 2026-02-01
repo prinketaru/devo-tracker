@@ -1,8 +1,12 @@
 "use client";
 
-import { forwardRef, useImperativeHandle, useRef, useState, useEffect } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState, useEffect, useCallback } from "react";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { ForwardRefEditor } from "./ForwardRefEditor";
+
+const DEFAULT_EDITOR_WIDTH_PERCENT = 66;
+const MIN_EDITOR_WIDTH_PERCENT = 30;
+const MAX_EDITOR_WIDTH_PERCENT = 95;
 
 export type DevotionWorkspaceValues = {
   title: string;
@@ -39,6 +43,34 @@ export const DevotionWorkspace = forwardRef<
   const [editText, setEditText] = useState("");
   const [prayerPanelOpen, setPrayerPanelOpen] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<"bible" | "prayer" | "resources">("bible");
+  const [editorWidthPercent, setEditorWidthPercent] = useState(DEFAULT_EDITOR_WIDTH_PERCENT);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const x = ev.clientX - rect.left;
+      const percent = Math.min(MAX_EDITOR_WIDTH_PERCENT, Math.max(MIN_EDITOR_WIDTH_PERCENT, (x / rect.width) * 100));
+      setEditorWidthPercent(percent);
+    };
+
+    const onMouseUp = () => {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }, []);
   const [passageQuery, setPassageQuery] = useState("");
   const [passageLoading, setPassageLoading] = useState(false);
   const [passageError, setPassageError] = useState<string | null>(null);
@@ -238,10 +270,16 @@ export const DevotionWorkspace = forwardRef<
     return `${m}:${String(s).padStart(2, "0")}`;
   };
 
+  const editorWidth = sidebarCollapsed ? 100 : editorWidthPercent;
+
   return (
-    <section className="h-full overflow-auto safe-area-x">
-      <div className="h-full grid grid-cols-1 gap-0 lg:grid-cols-[2fr_1fr]">
-        <div className="min-h-[60vh] lg:min-h-0 border-b border-stone-200 dark:border-zinc-800 lg:border-b-0 lg:border-r flex flex-col">
+    <section className="h-full overflow-auto safe-area-x relative">
+      <div
+        ref={containerRef}
+        className="h-full grid grid-cols-1 gap-0 lg:flex lg:flex-row"
+        style={{ "--editor-width": `${editorWidth}%` } as React.CSSProperties}
+      >
+        <div className="min-h-[60vh] lg:min-h-0 lg:w-[var(--editor-width)] lg:shrink-0 border-b border-stone-200 dark:border-zinc-800 lg:border-b-0 lg:border-r flex flex-col">
           <div className="h-full flex flex-col gap-3 p-3 sm:p-6">
             {sessionStartedAt != null && sessionStartedAt > 0 && (
               <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400" aria-live="polite">
@@ -300,7 +338,34 @@ export const DevotionWorkspace = forwardRef<
           </div>
         </div>
 
-        <aside className="min-h-0 p-3 sm:p-6 lg:flex lg:flex-col">
+        {/* Resize handle (desktop only) */}
+        {!sidebarCollapsed && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            onMouseDown={handleResizeStart}
+            className="hidden lg:flex w-1 flex-shrink-0 cursor-col-resize items-center justify-center group hover:bg-amber-500/20 active:bg-amber-500/30 transition-colors touch-none"
+          >
+            <div className="w-0.5 h-12 rounded-full bg-stone-300 dark:bg-zinc-600 group-hover:bg-amber-500 group-hover:w-1 transition-all" />
+          </div>
+        )}
+
+        {/* Expand button when sidebar collapsed (desktop) */}
+        {sidebarCollapsed && (
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed(false)}
+            className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 rounded-l-lg border border-r-0 border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-4 shadow-lg text-stone-600 dark:text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50/50 dark:hover:bg-zinc-800 transition-colors"
+            title="Show Bible & resources"
+            aria-label="Expand sidebar"
+          >
+            <span className="text-xs font-medium">◀</span>
+          </button>
+        )}
+
+        <aside
+          className={`min-h-0 p-3 sm:p-6 lg:flex lg:flex-col lg:min-w-0 lg:flex-1 ${sidebarCollapsed ? "lg:hidden" : ""}`}
+        >
           {/* Mobile: collapsible panel so editor gets full width by default */}
           <button
             type="button"
@@ -323,8 +388,9 @@ export const DevotionWorkspace = forwardRef<
           <div
             className={`mt-4 lg:mt-0 max-h-[45vh] lg:max-h-none flex-1 min-h-0 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3 sm:p-4 text-sm text-stone-700 dark:text-stone-200 overflow-auto flex flex-col ${prayerPanelOpen ? "flex" : "hidden lg:flex"}`}
           >
-            {/* Tab switcher */}
-            <div className="flex rounded-lg border border-stone-200 dark:border-zinc-700 p-0.5 mb-3 bg-stone-100 dark:bg-zinc-800">
+            {/* Tab switcher and collapse (desktop) */}
+            <div className="flex items-center gap-2 mb-3">
+            <div className="flex flex-1 min-w-0 rounded-lg border border-stone-200 dark:border-zinc-700 p-0.5 bg-stone-100 dark:bg-zinc-800">
               <button
                 type="button"
                 onClick={() => setSidebarTab("bible")}
@@ -346,6 +412,16 @@ export const DevotionWorkspace = forwardRef<
               >
                 Resources
               </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(true)}
+              className="hidden lg:flex shrink-0 rounded-md border border-stone-200 dark:border-zinc-700 p-2 text-stone-500 dark:text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50/50 dark:hover:bg-zinc-800 transition-colors"
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+            >
+              <span className="text-xs">▶</span>
+            </button>
             </div>
 
             {sidebarTab === "bible" && (
