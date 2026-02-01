@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/app/lib/auth-client";
 
@@ -13,7 +13,14 @@ type ProviderId = (typeof providers)[number]["id"];
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isPending && session?.user) {
+      router.replace("/dashboard");
+    }
+  }, [session, isPending, router]);
   const [loadingProvider, setLoadingProvider] = useState<ProviderId | null>(null);
   const [otpEmail, setOtpEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
@@ -77,6 +84,14 @@ export default function LoginPage() {
       setOtpLoading(false);
     }
   };
+
+  if (!isPending && session?.user) {
+    return (
+      <main className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center">
+        <p className="text-sm text-stone-500 dark:text-stone-400">Redirecting...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-stone-50 dark:bg-zinc-950">

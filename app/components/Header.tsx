@@ -10,6 +10,7 @@ export function Header() {
   const { data: session } = authClient.useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | undefined>(undefined);
+  const [streak, setStreak] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -24,6 +25,16 @@ export function Header() {
         }
       })
       .catch(() => {});
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch("/api/user/grace-status", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { streak?: number } | null) => {
+        setStreak(typeof data?.streak === "number" ? data.streak : null);
+      })
+      .catch(() => setStreak(null));
   }, [session?.user?.id]);
 
   useEffect(() => {
@@ -82,6 +93,11 @@ export function Header() {
                   )}
                 </span>
                 <span className="max-w-[140px] truncate">{userLabel}</span>
+                {streak != null && streak > 0 && (
+                  <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300" title="Current streak">
+                    🔥 {streak}
+                  </span>
+                )}
               </button>
               {isOpen ? (
                 <div className="absolute right-0 mt-2 w-56 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg py-2 text-sm cursor-pointer">

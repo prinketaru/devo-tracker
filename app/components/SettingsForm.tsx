@@ -346,144 +346,80 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
         </div>
       </section>
 
-      {templateMarkdown !== null && (
-        <DefaultTemplateEditorSection initialMarkdown={templateMarkdown} />
-      )}
-
       <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
-          Preferences
+          Devotion reminders
         </h2>
-        <label className="mt-4 block">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
-            Theme
-          </span>
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value as "system" | "light" | "dark")}
-            className="mt-2 w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70 cursor-pointer"
-          >
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-            Choose how the app looks. Your choice is saved.
-          </p>
+        <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
+          Add times when you want to be reminded. You&apos;ll get a browser notification at each time—allow notifications when prompted.
+        </p>
+        <label className="mt-4 flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={reminderEmails}
+            onChange={(e) => handleReminderEmailsChange(e.target.checked)}
+            className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
+          />
+          <span className="text-sm text-stone-700 dark:text-stone-200">Also send reminder emails at these times</span>
         </label>
-        <div className="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-900/50 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
-            Keyboard shortcuts
-          </p>
-          <ul className="text-sm text-stone-600 dark:text-stone-300 space-y-1">
-            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">K</kbd> Search devotions</li>
-            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">N</kbd> New devotion</li>
-            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">D</kbd> Dashboard</li>
-            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">S</kbd> Save (in editor)</li>
-          </ul>
-        </div>
-
-        <label className="mt-6 block">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
-            Timezone
-          </span>
-          <select
-            value={timezone}
-            onChange={(e) => handleTimezoneChange(e.target.value)}
-            className="mt-2 w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70 cursor-pointer"
-          >
-            {COMMON_TIMEZONES.map((tz) => (
-              <option key={tz} value={tz}>
-                {tz}
-              </option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-            Used for devotion dates and reminders.
-          </p>
+        <label className="mt-2 flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={weeklyDigest}
+            onChange={(e) => handleWeeklyDigestChange(e.target.checked)}
+            className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
+          />
+          <span className="text-sm text-stone-700 dark:text-stone-200">Send weekly summary email</span>
         </label>
-
-        <div className="mt-6">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
-            Devotion reminders
-          </span>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
-            Add times when you want to be reminded to do a devotion. Your list is saved. When the app is open, you&apos;ll get a browser notification at each reminder time—allow notifications when prompted.
-          </p>
-          <label className="mt-2 flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={reminderEmails}
-              onChange={(e) => handleReminderEmailsChange(e.target.checked)}
-              className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
-            />
-            <span className="text-sm text-stone-700 dark:text-stone-200">Also send reminder emails at these times</span>
-          </label>
-          <label className="mt-2 flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={weeklyDigest}
-              onChange={(e) => handleWeeklyDigestChange(e.target.checked)}
-              className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
-            />
-            <span className="text-sm text-stone-700 dark:text-stone-200">Send weekly summary email</span>
-          </label>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-            Get a weekly summary (e.g. days completed, streak).
-          </p>
-          <label className="mt-4 flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={gracePeriodWarnings}
-              onChange={(e) => handleGracePeriodWarningsChange(e.target.checked)}
-              className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
-            />
-            <span className="text-sm text-stone-700 dark:text-stone-200">Warn when you miss a day (email + notification)</span>
-          </label>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 mb-3">
-            Email and push notification when you miss a day and risk breaking your streak.
-          </p>
-          <form onSubmit={handleAddReminder} className="flex gap-2 mt-6">
-            <input
-              type="time"
-              value={newReminderTime}
-              onChange={(e) => setNewReminderTime(e.target.value)}
-              className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70"
-              required
-            />
-            <button
-              type="submit"
-              disabled={remindersSaving}
-              className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-70 cursor-pointer"
-            >
-              {remindersSaving ? "Saving..." : "Add"}
-            </button>
-          </form>
-          {reminders.length > 0 ? (
-            <ul className="mt-3 space-y-2">
-              {reminders.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex items-center justify-between rounded-lg border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-700 dark:text-stone-200"
+        <label className="mt-4 flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={gracePeriodWarnings}
+            onChange={(e) => handleGracePeriodWarningsChange(e.target.checked)}
+            className="rounded border-stone-300 dark:border-zinc-600 text-amber-600 focus:ring-amber-500"
+          />
+          <span className="text-sm text-stone-700 dark:text-stone-200">Warn when you miss a day (email + notification)</span>
+        </label>
+        <form onSubmit={handleAddReminder} className="flex gap-2 mt-4">
+          <input
+            type="time"
+            value={newReminderTime}
+            onChange={(e) => setNewReminderTime(e.target.value)}
+            className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70"
+            required
+          />
+          <button
+            type="submit"
+            disabled={remindersSaving}
+            className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-70 cursor-pointer"
+          >
+            {remindersSaving ? "Saving..." : "Add"}
+          </button>
+        </form>
+        {reminders.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {reminders.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center justify-between rounded-lg border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-700 dark:text-stone-200"
+              >
+                <span>{formatReminderTime(r.time)}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveReminder(r.id)}
+                  disabled={remindersSaving}
+                  className="rounded px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
                 >
-                  <span>{formatReminderTime(r.time)}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveReminder(r.id)}
-                    disabled={remindersSaving}
-                    className="rounded px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">
-              No reminders yet. Pick a time above and click Add.
-            </p>
-          )}
-        </div>
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">
+            No reminders yet. Pick a time above and click Add.
+          </p>
+        )}
       </section>
 
       <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
@@ -550,6 +486,65 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
         {inviteError && (
           <p className="mt-3 text-sm text-red-600 dark:text-red-400">{inviteError}</p>
         )}
+      </section>
+
+      {templateMarkdown !== null && (
+        <DefaultTemplateEditorSection initialMarkdown={templateMarkdown} />
+      )}
+
+      <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
+          Preferences
+        </h2>
+        <label className="mt-4 block">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+            Theme
+          </span>
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as "system" | "light" | "dark")}
+            className="mt-2 w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70 cursor-pointer"
+          >
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+            Choose how the app looks. Your choice is saved.
+          </p>
+        </label>
+        <div className="mt-6 rounded-lg border border-stone-200 dark:border-zinc-800 bg-stone-50/50 dark:bg-zinc-900/50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
+            Keyboard shortcuts
+          </p>
+          <ul className="text-sm text-stone-600 dark:text-stone-300 space-y-1">
+            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">K</kbd> Search devotions</li>
+            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">N</kbd> New devotion</li>
+            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">D</kbd> Dashboard</li>
+            <li><kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">⌘</kbd>/<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 rounded bg-stone-200 dark:bg-zinc-700 text-xs font-mono">S</kbd> Save (in editor)</li>
+          </ul>
+        </div>
+
+        <label className="mt-6 block">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+            Timezone
+          </span>
+          <select
+            value={timezone}
+            onChange={(e) => handleTimezoneChange(e.target.value)}
+            className="mt-2 w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70 cursor-pointer"
+          >
+            {COMMON_TIMEZONES.map((tz) => (
+              <option key={tz} value={tz}>
+                {tz}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+            Used for devotion dates and reminders.
+          </p>
+        </label>
+
       </section>
 
       <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">

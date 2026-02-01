@@ -137,7 +137,7 @@ function getWeekStartDateString(timezone: string): string {
 export async function getGraceStatus(
   userId: string,
   timezone: string
-): Promise<{ onGracePeriod: boolean; graceStreakDays: number }> {
+): Promise<{ onGracePeriod: boolean; graceStreakDays: number; streak: number }> {
   const db = await getDb();
   const docs = await db
     .collection(DEVOTIONS_COLLECTION)
@@ -148,8 +148,9 @@ export async function getGraceStatus(
   const allDates = docs.map((d) =>
     d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt)
   );
-  const { onGracePeriod, graceStreakDays } = computeStreak(allDates, timezone);
-  return { onGracePeriod, graceStreakDays };
+  const { current, onGracePeriod, graceStreakDays } = computeStreak(allDates, timezone);
+  const streak = onGracePeriod ? graceStreakDays : current;
+  return { onGracePeriod, graceStreakDays, streak };
 }
 
 /** Fetch dashboard data for a user: recent devotions, weekly stats, streak. */

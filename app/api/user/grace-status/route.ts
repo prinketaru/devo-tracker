@@ -16,6 +16,6 @@ export async function GET() {
   const doc = await db.collection(PREFERENCES_COLLECTION).findOne({ userId: session.user.id });
   const timezone = doc?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const { onGracePeriod, graceStreakDays } = await getGraceStatus(session.user.id, timezone);
-  return NextResponse.json({ onGracePeriod, graceStreakDays });
+  const { onGracePeriod, graceStreakDays, streak } = await getGraceStatus(session.user.id, timezone);
+  return NextResponse.json({ onGracePeriod, graceStreakDays, streak });
 }

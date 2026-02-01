@@ -24,6 +24,55 @@ body {
   font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
 }
 
+/* Scrollbar styling – light theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d6d3d1 #f5f5f4;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f5f5f4;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #b45309;
+}
+
+*::-webkit-scrollbar-corner {
+  background: #f5f5f4;
+}
+
+/* Scrollbar styling – dark theme */
+.dark * {
+  scrollbar-color: #3f3f46 #27272a;
+}
+
+.dark *::-webkit-scrollbar-track {
+  background: #27272a;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+.dark *::-webkit-scrollbar-corner {
+  background: #27272a;
+}
+
 /* Safe area for notched devices (e.g. iPhone) */
 .safe-area-x {
   padding-left: env(safe-area-inset-left);
