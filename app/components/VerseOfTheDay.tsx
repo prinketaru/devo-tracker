@@ -37,8 +37,9 @@ export function VerseOfTheDay() {
       <p className="text-sm font-medium text-stone-700 dark:text-stone-300 italic">
         &ldquo;{verse.text ?? `Open ${verse.reference} in your Bible`}&rdquo;
       </p>
-      <p className="mt-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
-        — {verse.reference}
+      <p className="mt-2 text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+        <span>— {verse.reference}</span>
+        <span className="uppercase tracking-[0.2em] text-[10px] text-amber-700/60 dark:text-amber-400/60">ESV</span>
       </p>
       {verse.error && (
         <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">{verse.error}</p>

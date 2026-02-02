@@ -131,7 +131,7 @@ export default function DevotionsListPage() {
               <div className="flex flex-wrap gap-2">
                 <input
                   type="text"
-                  placeholder="Search title, passage, content..."
+                  placeholder="Search title, passage, content, tags..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && applyFilters()}

@@ -8,6 +8,15 @@ const DEFAULT_EDITOR_WIDTH_PERCENT = 66;
 const MIN_EDITOR_WIDTH_PERCENT = 30;
 const MAX_EDITOR_WIDTH_PERCENT = 95;
 
+const PRAYER_CATEGORIES = ["family", "health", "ministry", "personal", "other"] as const;
+const CATEGORY_LABELS: Record<string, string> = {
+  family: "Family",
+  health: "Health",
+  ministry: "Ministry",
+  personal: "Personal",
+  other: "Other",
+};
+
 export type DevotionWorkspaceValues = {
   title: string;
   passage: string;
@@ -38,10 +47,12 @@ export const DevotionWorkspace = forwardRef<
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>([]);
   const [prayersLoading, setPrayersLoading] = useState(false);
   const [newPrayerText, setNewPrayerText] = useState("");
+  const [newPrayerCategory, setNewPrayerCategory] = useState("other");
   const [addingPrayer, setAddingPrayer] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [prayerPanelOpen, setPrayerPanelOpen] = useState(false);
+  const [prayerFilterCategory, setPrayerFilterCategory] = useState("");
   const [sidebarTab, setSidebarTab] = useState<"bible" | "prayer" | "resources">("bible");
   const [editorWidthPercent, setEditorWidthPercent] = useState(DEFAULT_EDITOR_WIDTH_PERCENT);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -76,6 +87,7 @@ export const DevotionWorkspace = forwardRef<
   const [passageError, setPassageError] = useState<string | null>(null);
   const [passageResult, setPassageResult] = useState<{ canonical: string; passages: string[] } | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [timerHidden, setTimerHidden] = useState(false);
 
   useEffect(() => {
     if (!sessionStartedAt || sessionStartedAt <= 0) return;
@@ -112,7 +124,10 @@ export const DevotionWorkspace = forwardRef<
 
   const fetchPrayerRequests = () => {
     setPrayersLoading(true);
-    fetch("/api/prayer-requests", { credentials: "include" })
+    const url = prayerFilterCategory
+      ? `/api/prayer-requests?category=${encodeURIComponent(prayerFilterCategory)}`
+      : "/api/prayer-requests";
+    fetch(url, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : []))
       .then((data: PrayerRequest[]) => setPrayerRequests(Array.isArray(data) ? data : []))
       .catch(() => setPrayerRequests([]))
@@ -121,7 +136,7 @@ export const DevotionWorkspace = forwardRef<
 
   useEffect(() => {
     fetchPrayerRequests();
-  }, []);
+  }, [prayerFilterCategory]);
 
   const handleAddPrayer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,7 +148,7 @@ export const DevotionWorkspace = forwardRef<
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ text, status: "active", category: "other" }),
+        body: JSON.stringify({ text, status: "active", category: newPrayerCategory }),
       });
       if (res.ok) {
         setNewPrayerText("");
@@ -247,7 +262,7 @@ export const DevotionWorkspace = forwardRef<
     () => ({
       getValues() {
         const tagsRaw = tagsRef.current?.value?.trim() ?? "";
-        const tags = tagsRaw ? tagsRaw.split(/[\s,]+/).map((t) => t.trim()).filter(Boolean) : [];
+        const tags = tagsRaw ? tagsRaw.split(/\s*,\s*/).map((t) => t.trim()).filter(Boolean) : [];
         return {
           title: titleRef.current?.value?.trim() ?? "",
           passage: passageRef.current?.value?.trim() ?? "",
@@ -283,10 +298,30 @@ export const DevotionWorkspace = forwardRef<
           <div className="h-full flex flex-col gap-3 p-3 sm:p-6">
             {sessionStartedAt != null && sessionStartedAt > 0 && (
               <div className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400" aria-live="polite">
-                <span className="tabular-nums font-medium" title="Time in this session">
-                  {formatElapsed(elapsedSeconds)}
-                </span>
-                <span className="text-xs">in this session</span>
+                {timerHidden ? (
+                  <button
+                    type="button"
+                    onClick={() => setTimerHidden(false)}
+                    className="text-xs font-semibold uppercase tracking-[0.2em] hover:text-amber-600 dark:hover:text-amber-400"
+                    title="Show timer"
+                    aria-label="Show timer"
+                  >
+                    Show timer
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setTimerHidden(true)}
+                    className="flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400 hover:text-amber-600 dark:hover:text-amber-400"
+                    title="Hide timer"
+                    aria-label="Hide timer"
+                  >
+                    <span className="tabular-nums font-medium" title="Time in this session">
+                      {formatElapsed(elapsedSeconds)}
+                    </span>
+                    <span className="text-xs">in this session</span>
+                  </button>
+                )}
               </div>
             )}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -323,7 +358,7 @@ export const DevotionWorkspace = forwardRef<
                 ref={tagsRef}
                 type="text"
                 defaultValue={initialTags.join(", ")}
-                placeholder="e.g. Psalms, gratitude"
+                placeholder="e.g. Psalms, grateful heart, prayer"
                 className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 text-base sm:text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70 min-h-[44px]"
               />
             </label>
@@ -455,7 +490,8 @@ export const DevotionWorkspace = forwardRef<
                       {passageResult.canonical}
                     </p>
                     <div
-                      className="esv-passage text-sm text-stone-700 dark:text-stone-200 font-serif leading-relaxed"
+                      className="esv-passage text-sm text-stone-700 dark:text-stone-200 leading-relaxed"
+                      style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif" }}
                       dangerouslySetInnerHTML={{ __html: passageResult.passages.join("") }}
                     />
                     <p className="mt-3 pt-3 border-t border-stone-200 dark:border-zinc-700 text-[10px] text-stone-500 dark:text-stone-400 leading-snug">
@@ -486,7 +522,37 @@ export const DevotionWorkspace = forwardRef<
                 Prayer Requests
               </h3>
 
-              <form onSubmit={handleAddPrayer} className="flex gap-2 shrink-0">
+              {PRAYER_CATEGORIES.length > 1 && (
+                <div className="flex flex-wrap gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setPrayerFilterCategory("")}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                      !prayerFilterCategory
+                        ? "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200"
+                        : "bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-zinc-700"
+                    }`}
+                  >
+                    All
+                  </button>
+                  {PRAYER_CATEGORIES.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setPrayerFilterCategory(c)}
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors capitalize ${
+                        prayerFilterCategory === c
+                          ? "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200"
+                          : "bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-zinc-700"
+                      }`}
+                    >
+                      {CATEGORY_LABELS[c] ?? c}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <form onSubmit={handleAddPrayer} className="flex flex-col sm:flex-row gap-2 shrink-0">
                 <input
                   type="text"
                   value={newPrayerText}
@@ -495,6 +561,17 @@ export const DevotionWorkspace = forwardRef<
                   className="flex-1 min-w-0 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 text-base sm:text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 outline-none focus:ring-1 focus:ring-amber-500/70 min-h-[44px]"
                   disabled={addingPrayer}
                 />
+                <select
+                  value={newPrayerCategory}
+                  onChange={(e) => setNewPrayerCategory(e.target.value)}
+                  className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2.5 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-1 focus:ring-amber-500/70 min-h-[44px] min-w-[80px]"
+                >
+                  {PRAYER_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {CATEGORY_LABELS[c] ?? c}
+                    </option>
+                  ))}
+                </select>
                 <button
                   type="submit"
                   disabled={!newPrayerText.trim() || addingPrayer}

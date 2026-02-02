@@ -11,6 +11,7 @@ import { PrayerSection } from "@/app/components/PrayerSection";
 import { UserPreferencesInit } from "@/app/components/UserPreferencesInit";
 import { VerseOfTheDay } from "@/app/components/VerseOfTheDay";
 import { DashboardStatsSection } from "@/app/components/DashboardStatsSection";
+import { ReminderBanner } from "@/app/components/ReminderBanner";
 
 const PREFERENCES_COLLECTION = "user_preferences";
 
@@ -95,26 +96,7 @@ export default async function DashboardPage() {
           </section>
         </div>
 
-        {!hasReminders && (
-          <Link
-            href="/settings"
-            className="mt-10 block rounded-2xl border border-amber-200 dark:border-amber-500/40 bg-amber-50/80 dark:bg-amber-950/30 p-5 shadow-sm hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-semibold text-stone-900 dark:text-stone-100">
-                  Set up a devotion reminder
-                </h2>
-                <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
-                  Get a notification at the times you choose so you never miss a devotion.
-                </p>
-              </div>
-              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                Add reminder →
-              </span>
-            </div>
-          </Link>
-        )}
+        {!hasReminders && <ReminderBanner />}
 
         {/* Recent Devotions + Prayer */}
         <section className="mt-8 grid gap-6 md:grid-cols-[2fr_1fr]">

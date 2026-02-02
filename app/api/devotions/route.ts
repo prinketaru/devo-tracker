@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   if (tag) filter.tags = tag;
   if (search) {
     const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-    filter.$or = [{ title: re }, { passage: re }, { content: re }];
+    filter.$or = [{ title: re }, { passage: re }, { content: re }, { tags: re }];
   }
 
   const skip = (page - 1) * limit;

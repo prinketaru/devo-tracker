@@ -82,7 +82,7 @@ export async function GET() {
     const params = new URLSearchParams({
       q: reference,
       "include-passage-references": "false",
-      "include-verse-numbers": "true",
+      "include-verse-numbers": "false",
       "include-footnotes": "false",
       "include-headings": "false",
       "include-short-copyright": "false",
