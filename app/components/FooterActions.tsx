@@ -1,19 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type FooterActionsProps = {
-  isLoggedIn: boolean;
-};
-
-export function FooterActions({ isLoggedIn }: FooterActionsProps) {
+export function FooterActions() {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState("General");
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/user/preferences", { credentials: "include" })
+      .then((res) => {
+        if (cancelled) return;
+        setIsLoggedIn(res.ok);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setIsLoggedIn(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSendFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,10 +64,12 @@ export function FooterActions({ isLoggedIn }: FooterActionsProps) {
     setFeedbackOpen(true);
   };
 
+  const loggedIn = isLoggedIn === true;
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-        {!isLoggedIn && (
+        {!loggedIn && (
           <Link
             href="/login"
             className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
@@ -62,7 +77,7 @@ export function FooterActions({ isLoggedIn }: FooterActionsProps) {
             Sign In
           </Link>
         )}
-        {!isLoggedIn && (
+        {!loggedIn && (
           <a
             href="#features"
             className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
@@ -70,7 +85,7 @@ export function FooterActions({ isLoggedIn }: FooterActionsProps) {
             Features
           </a>
         )}
-        {isLoggedIn && (
+        {loggedIn && (
           <button
             type="button"
             onClick={handleOpenFeedback}
