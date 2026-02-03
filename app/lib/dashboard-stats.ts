@@ -28,13 +28,9 @@ function summarize(content: string, maxLen = 120): string {
 
 /** Grace period: allow 1 missed day without breaking the streak. Miss 2+ days and streak ends. */
 const STREAK_GRACE_DAYS = 1;
-
-/** Get yesterday's date string in timezone (YYYY-MM-DD). */
-function getYesterdayStr(timezone: string): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return toDateStringInTimezone(d, timezone);
-}
+const HOURS_BEFORE_MISSED = 48;
+const MS_PER_HOUR = 1000 * 60 * 60;
+const MS_PER_DAY = MS_PER_HOUR * 24;
 
 /** Compute consecutive-day streak and best streak. Uses user timezone. Ends streak if gap > 1 + grace. */
 function computeStreak(
@@ -48,35 +44,43 @@ function computeStreak(
   ).sort()
     .reverse();
 
-  const todayStr = toDateStringInTimezone(new Date(), timezone);
-  const yesterdayStr = getYesterdayStr(timezone);
-  let current = 0;
-  let best = 0;
-  let run = 1;
-  let countingCurrent = uniqueDays[0] === todayStr;
-  let onGracePeriod = false;
-  let graceStreakDays = 0;
-
-  for (let i = 0; i < uniqueDays.length; i++) {
-    if (i > 0) {
+  const best = (() => {
+    let run = 1;
+    let bestRun = 1;
+    for (let i = 1; i < uniqueDays.length; i++) {
       const prev = new Date(uniqueDays[i - 1] + "T12:00:00");
       const curr = new Date(uniqueDays[i] + "T12:00:00");
-      const diffDays = Math.round((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
-      // Consecutive (1) or within grace (2 = 1 missed day): continue streak. Otherwise: break.
+      const diffDays = Math.round((prev.getTime() - curr.getTime()) / MS_PER_DAY);
       if (diffDays >= 1 && diffDays <= 1 + STREAK_GRACE_DAYS) run++;
       else run = 1;
+      bestRun = Math.max(bestRun, run);
     }
-    best = Math.max(best, run);
-    if (countingCurrent) current = run;
-    // On grace: most recent devotion was yesterday, streak at risk
-    if (uniqueDays[0] === yesterdayStr && run > 0) {
-      onGracePeriod = true;
-      graceStreakDays = run;
-    }
-    if (uniqueDays[i] !== todayStr && countingCurrent) countingCurrent = false;
-  }
+    return bestRun;
+  })();
 
-  if (countingCurrent) current = run;
+  const currentRun = (() => {
+    let run = 1;
+    for (let i = 1; i < uniqueDays.length; i++) {
+      const prev = new Date(uniqueDays[i - 1] + "T12:00:00");
+      const curr = new Date(uniqueDays[i] + "T12:00:00");
+      const diffDays = Math.round((prev.getTime() - curr.getTime()) / MS_PER_DAY);
+      if (diffDays >= 1 && diffDays <= 1 + STREAK_GRACE_DAYS) run++;
+      else break;
+    }
+    return run;
+  })();
+
+  const mostRecentCompletionMs = Math.max(...dates.map((d) => d.getTime()));
+  const hoursSinceLast = (Date.now() - mostRecentCompletionMs) / MS_PER_HOUR;
+  const missedAfterHours = HOURS_BEFORE_MISSED;
+  const withinCurrentWindow = hoursSinceLast <= missedAfterHours;
+  const withinGraceWindow =
+    hoursSinceLast > missedAfterHours &&
+    hoursSinceLast <= missedAfterHours + STREAK_GRACE_DAYS * 24;
+
+  const current = withinCurrentWindow ? currentRun : 0;
+  const onGracePeriod = withinGraceWindow && currentRun > 0;
+  const graceStreakDays = onGracePeriod ? currentRun : 0;
 
   return { current, best, onGracePeriod, graceStreakDays };
 }

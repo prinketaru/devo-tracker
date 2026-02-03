@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { getSession } from "@/app/lib/auth-server";
+import { FooterActions } from "@/app/components/FooterActions";
 
-export function Footer() {
+export async function Footer() {
+  const session = await getSession();
+  const isLoggedIn = !!session?.user?.id;
   return (
     <footer className="border-t border-stone-200 dark:border-zinc-800 bg-stone-100/50 dark:bg-zinc-950/50">
       <div className="max-w-4xl mx-auto px-6 py-10">
@@ -13,20 +17,7 @@ export function Footer() {
               Devo Tracker
             </span>
           </Link>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-            <Link
-              href="/login"
-              className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
-            >
-              Sign In
-            </Link>
-            <a
-              href="#features"
-              className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
-            >
-              Features
-            </a>
-          </div>
+          <FooterActions isLoggedIn={isLoggedIn} />
         </div>
         <p className="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
           © {new Date().getFullYear()} Devo Tracker — Daily devotion, made consistent.

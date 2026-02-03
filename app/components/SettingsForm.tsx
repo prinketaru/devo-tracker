@@ -74,6 +74,11 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [partners, setPartners] = useState<{ id: string; email: string; status: string }[]>([]);
   const [revokeLoading, setRevokeLoading] = useState<string | null>(null);
+  const [feedbackType, setFeedbackType] = useState("General");
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<"success" | "error" | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
   const fetchPartners = () => {
     fetch("/api/accountability/partners", { credentials: "include" })
@@ -259,6 +264,36 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
       setDeleteError("Network error. Please try again.");
     }
     setDeleteLoading(false);
+  };
+
+  const handleSendFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const message = feedbackText.trim();
+    if (!message || feedbackLoading) return;
+    setFeedbackLoading(true);
+    setFeedbackStatus(null);
+    setFeedbackError(null);
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ message, type: feedbackType }),
+      });
+      if (res.ok) {
+        setFeedbackText("");
+        setFeedbackStatus("success");
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      setFeedbackError(data?.error ?? "Could not send feedback. Try again.");
+      setFeedbackStatus("error");
+    } catch {
+      setFeedbackError("Network error. Please try again.");
+      setFeedbackStatus("error");
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
   return (
@@ -651,6 +686,63 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
         </div>
         {restoreMessage === "success" && <p className="mt-2 text-sm text-green-600 dark:text-green-400">Restore completed.</p>}
         {restoreMessage === "error" && <p className="mt-2 text-sm text-red-600 dark:text-red-400">Restore failed. Check file format.</p>}
+      </section>
+
+      <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
+          Feedback
+        </h2>
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
+          Share ideas, report bugs, or tell us what you want to see next.
+        </p>
+        <form onSubmit={handleSendFeedback} className="mt-4 space-y-3">
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+              Type
+            </span>
+            <select
+              value={feedbackType}
+              onChange={(e) => setFeedbackType(e.target.value)}
+              className="mt-2 w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70 cursor-pointer"
+            >
+              <option value="General">General</option>
+              <option value="Bug">Bug</option>
+              <option value="Idea">Idea</option>
+              <option value="Praise">Praise</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+              Your message
+            </span>
+            <textarea
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+              rows={5}
+              maxLength={1500}
+              placeholder="Write your feedback here..."
+              className="mt-2 w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70"
+            />
+          </label>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
+              {feedbackText.length}/1500
+            </p>
+            <button
+              type="submit"
+              disabled={!feedbackText.trim() || feedbackLoading}
+              className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {feedbackLoading ? "Sending..." : "Send feedback"}
+            </button>
+          </div>
+          {feedbackStatus === "success" && (
+            <p className="text-sm text-green-600 dark:text-green-400">Thanks! Your feedback was sent.</p>
+          )}
+          {feedbackStatus === "error" && (
+            <p className="text-sm text-red-600 dark:text-red-400">{feedbackError ?? "Could not send feedback."}</p>
+          )}
+        </form>
       </section>
 
       <section className="rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 p-6 shadow-sm">
