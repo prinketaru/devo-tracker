@@ -12,6 +12,7 @@ import { UserPreferencesInit } from "@/app/components/UserPreferencesInit";
 import { VerseOfTheDay } from "@/app/components/VerseOfTheDay";
 import { DashboardStatsSection } from "@/app/components/DashboardStatsSection";
 import { ReminderBanner } from "@/app/components/ReminderBanner";
+import { OnboardingWrapper } from "@/app/components/OnboardingWrapper";
 
 const PREFERENCES_COLLECTION = "user_preferences";
 
@@ -22,19 +23,21 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Fetch user's timezone and reminders
+  // Fetch user's timezone, reminders, and onboarding status
   const db = await getDb();
   const prefsColl = db.collection(PREFERENCES_COLLECTION);
   const prefsDoc = await prefsColl.findOne({ userId: session.user.id });
   const timezone = prefsDoc?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const reminders = Array.isArray(prefsDoc?.reminders) ? prefsDoc.reminders : [];
   const hasReminders = reminders.length > 0;
+  const showOnboarding = !prefsDoc?.onboardingCompleted;
 
   const { devotions, weeklyStats, streak, todayDevotionId } = await getDashboardData(session.user.id, timezone);
   const devotionHistory = devotions;
 
   return (
     <main className="min-h-screen bg-stone-50 dark:bg-zinc-950">
+      <OnboardingWrapper showOnboarding={showOnboarding} />
       <UserPreferencesInit />
       <Header />
       <div className="max-w-5xl mx-auto px-6 py-12">

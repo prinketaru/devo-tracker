@@ -24,7 +24,9 @@ export function VerseOfTheDay() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-400 mb-2">
           Verse of the Day
         </p>
-        <p className="text-sm text-stone-500 dark:text-stone-400 animate-pulse">Loading…</p>
+        <p className="text-sm text-stone-500 dark:text-stone-400">
+          Loading…
+        </p>
       </section>
     );
   }

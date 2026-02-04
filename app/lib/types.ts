@@ -25,4 +25,5 @@ export type UserPreferences = {
   profileImageUrl?: string;
   reminderEmails?: boolean;
   weeklyDigest?: boolean;
+  onboardingCompleted?: boolean;
 };
