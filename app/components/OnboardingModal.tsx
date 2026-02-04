@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { FiBook, FiCalendar, FiBell, FiTrendingUp, FiUsers, FiCheckCircle, FiSettings } from "react-icons/fi";
 
 type OnboardingModalProps = {
@@ -14,6 +15,7 @@ type Step = {
   description: string;
   icon: React.ReactNode;
   features: string[];
+  locations?: { label: string; href: string; description?: string }[];
 };
 
 const steps: Step[] = [
@@ -23,9 +25,16 @@ const steps: Step[] = [
     description: "Your daily companion for spiritual growth and consistency",
     icon: <FiBook className="w-12 h-12" />,
     features: [
-      "Track your daily devotional time",
-      "Record reflections and spiritual insights",
-      "Build consistent habits with streak tracking",
+      "Start from the Dashboard—your home base for today’s devotion",
+      "Use the top buttons to log or start a devotion right away",
+      "Check your streak and Verse of the Day in one place",
+    ],
+    locations: [
+      {
+        label: "Dashboard",
+        href: "/dashboard",
+        description: "Today’s actions, streak, and recent devotions.",
+      },
     ],
   },
   {
@@ -34,10 +43,22 @@ const steps: Step[] = [
     description: "Write and organize your daily spiritual reflections",
     icon: <FiCalendar className="w-12 h-12" />,
     features: [
-      "Use Bible passages to guide your devotions",
-      "Rich text editor with formatting options",
-      "Track time spent in devotion",
-      "Quick log feature for busy days",
+      "Start a new entry from the Dashboard or the Devotions page",
+      "Use the editor to add passages, reflections, and tags",
+      "Quick log lets you record a devotion in seconds",
+      "View and edit past devotions anytime",
+    ],
+    locations: [
+      {
+        label: "Start today’s devotion",
+        href: "/devotions/new",
+        description: "Open the editor for a new devotion.",
+      },
+      {
+        label: "All devotions",
+        href: "/devotions",
+        description: "Browse, search, and open past devotions.",
+      },
     ],
   },
   {
@@ -46,10 +67,17 @@ const steps: Step[] = [
     description: "Never miss your devotion time",
     icon: <FiBell className="w-12 h-12" />,
     features: [
-      "Set multiple daily reminder times",
-      "Email notifications to keep you on track",
-      "Weekly digest of your spiritual journey",
-      "Grace period to maintain your streak",
+      "Set daily reminder times in Settings",
+      "Toggle email reminders and weekly digests",
+      "Enable grace-period warnings so you never lose momentum",
+      "Reminders show up on your Dashboard if missing",
+    ],
+    locations: [
+      {
+        label: "Reminder settings",
+        href: "/settings",
+        description: "Add times, emails, and weekly digest options.",
+      },
     ],
   },
   {
@@ -58,10 +86,17 @@ const steps: Step[] = [
     description: "Monitor your spiritual growth journey",
     icon: <FiTrendingUp className="w-12 h-12" />,
     features: [
-      "View your current and best streaks",
-      "Weekly statistics and insights",
-      "Devotion calendar to see your consistency",
-      "Verse of the day for daily inspiration",
+      "Streaks and weekly stats live on your Dashboard",
+      "Use the calendar to spot patterns at a glance",
+      "Insights help you see your growth over time",
+      "Verse of the Day appears on the Dashboard",
+    ],
+    locations: [
+      {
+        label: "Dashboard insights",
+        href: "/dashboard",
+        description: "Streaks, weekly stats, calendar, and insights.",
+      },
     ],
   },
   {
@@ -70,10 +105,17 @@ const steps: Step[] = [
     description: "Share your journey with others",
     icon: <FiUsers className="w-12 h-12" />,
     features: [
-      "Invite accountability partners to track your progress",
-      "Partners can see your devotion streaks",
-      "Encourage each other in spiritual growth",
-      "Privacy-focused sharing (partners see stats, not content)",
+      "Invite partners from Settings",
+      "Partners can view your streak and completion status",
+      "Encourage each other without sharing devotion content",
+      "Revoke or manage invites anytime",
+    ],
+    locations: [
+      {
+        label: "Accountability",
+        href: "/settings",
+        description: "Find the accountability section in Settings.",
+      },
     ],
   },
   {
@@ -82,10 +124,17 @@ const steps: Step[] = [
     description: "Make Devo Tracker work for you",
     icon: <FiSettings className="w-12 h-12" />,
     features: [
-      "Set your timezone for accurate tracking",
-      "Create devotion templates to save time",
-      "Enable prayer requests and tracking",
-      "Export devotions as PDF or Word documents",
+      "Set your timezone and profile preferences",
+      "Create devotion templates for faster writing",
+      "Enable prayer request tracking",
+      "Export devotions as PDF, Word, or Markdown",
+    ],
+    locations: [
+      {
+        label: "Settings",
+        href: "/settings",
+        description: "Timezone, templates, prayer, and exports.",
+      },
     ],
   },
 ];
@@ -195,6 +244,35 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                   </li>
                 ))}
               </ul>
+
+              {step.locations && step.locations.length > 0 ? (
+                <div className="mt-6 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/60 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+                    Where to find this
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {step.locations.map((location) => (
+                      <Link
+                        key={location.href}
+                        href={location.href}
+                        className="group rounded-lg border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-700 dark:text-stone-200 hover:border-amber-300 dark:hover:border-amber-500/60 hover:text-stone-900 dark:hover:text-stone-50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium">{location.label}</span>
+                          <span className="text-amber-600 dark:text-amber-400 text-xs font-semibold">
+                            Open →
+                          </span>
+                        </div>
+                        {location.description ? (
+                          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                            {location.description}
+                          </p>
+                        ) : null}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
 

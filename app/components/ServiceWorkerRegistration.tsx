@@ -13,6 +13,11 @@ export function ServiceWorkerRegistration() {
       !("serviceWorker" in navigator) ||
       process.env.NODE_ENV !== "production"
     ) {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((reg) => reg.unregister());
+        }).catch(() => {});
+      }
       return;
     }
     navigator.serviceWorker
