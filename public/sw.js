@@ -58,14 +58,14 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("push", (event) => {
   if (!event.data) return;
-  let payload = { title: "Devo Tracker", body: "Time for your devotion." };
+  let payload = { title: "DayMark", body: "Time for your devotion." };
   try {
     payload = event.data.json();
   } catch {
     payload.body = event.data.text();
   }
   event.waitUntil(
-    self.registration.showNotification(payload.title || "Devo Tracker", {
+    self.registration.showNotification(payload.title || "DayMark", {
       body: payload.body,
       icon: "/android-chrome-192x192.png",
       badge: "/android-chrome-192x192.png",

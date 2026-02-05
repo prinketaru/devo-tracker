@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Devo Tracker | Your Daily Devotion Companion",
+  title: "DayMark | Your Daily Devotion Companion",
   description: "Track your daily devotions, build spiritual habits, and grow closer to your faith. Simple, beautiful, and focused on meaningful spiritual growth.",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Devo Tracker",
+    title: "DayMark",
   },
 };
 

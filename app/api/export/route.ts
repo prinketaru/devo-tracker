@@ -36,7 +36,7 @@ export async function GET(request: Request) {
   }));
 
   if (format === "markdown") {
-    const lines: string[] = ["# Devo Tracker Export", "", `Exported ${new Date().toISOString()}`, ""];
+    const lines: string[] = ["# DayMark Export", "", `Exported ${new Date().toISOString()}`, ""];
     lines.push("## Devotions", "");
     for (const d of exportDevotions) {
       const date = d.createdAt instanceof Date ? d.createdAt.toISOString().slice(0, 10) : String(d.createdAt).slice(0, 10);

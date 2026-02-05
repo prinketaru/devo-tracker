@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Devo Tracker | Your Daily Devotion Companion",
-    short_name: "Devo Tracker",
+    name: "DayMark | Your Daily Devotion Companion",
+    short_name: "DayMark",
     description:
       "Track your daily devotions, build spiritual habits, and grow closer to your faith.",
     start_url: "/",

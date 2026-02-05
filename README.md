@@ -1,4 +1,4 @@
-# Devo Tracker
+# DayMark
 
 Track your daily devotions, build spiritual habits, and grow closer to your faith.
 

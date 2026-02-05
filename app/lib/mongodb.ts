@@ -1,5 +1,5 @@
 /**
- * MongoDB connection for Devo Tracker.
+ * MongoDB connection for DayMark.
  * Uses MONGO_URI from env; caches client for serverless.
  */
 

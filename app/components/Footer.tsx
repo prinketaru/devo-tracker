@@ -13,13 +13,14 @@ export function Footer() {
               D
             </div>
             <span className="text-sm font-semibold text-stone-900 dark:text-stone-50">
-              Devo Tracker
+              DayMark
             </span>
           </Link>
           <FooterActions />
         </div>
         <p className="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
-          © {new Date().getFullYear()} Devo Tracker — Daily devotion, made consistent.
+          © {new Date().getFullYear()} DayMark — Daily devotion, made consistent.<br />
+          <span className="text-xs">made with ❤️ by <a href="https://prinke.dev" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">prinke.dev</a></span>
         </p>
       </div>
     </footer>

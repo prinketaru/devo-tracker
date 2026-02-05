@@ -65,7 +65,7 @@ export function Header() {
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-semibold tracking-wide text-stone-900 dark:text-stone-50">
-              Devo Tracker
+              DayMark
             </span>
             <span className="text-xs text-stone-500 dark:text-stone-400">
               Daily devotion, made consistent.
@@ -73,6 +73,12 @@ export function Header() {
           </div>
         </Link>
         <div className="flex gap-3 items-center">
+          <Link
+            href="/announcements"
+            className="text-sm text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white transition-colors"
+          >
+            Updates
+          </Link>
           {session?.user ? (
             <div className="relative" ref={menuRef}>
               <button

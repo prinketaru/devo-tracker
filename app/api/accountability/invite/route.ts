@@ -53,8 +53,8 @@ export async function POST(request: Request) {
     const emailRes = await sendEmail({
       to: email,
       subject: `${session.user.name || "Someone"} invited you to be their devotion accountability partner`,
-      text: `You've been invited to be an accountability partner for Devo Tracker.\n\nView their devotion status (streak, completed today) at: ${acceptUrl}\n\nThis link lets you see if they completed their devotion—no devotion content is shared.`,
-      html: `<p>You've been invited to be an accountability partner for Devo Tracker.</p><p><a href="${acceptUrl}">View their devotion status</a> (streak, completed today)</p><p>This link lets you see if they completed their devotion—no devotion content is shared.</p>`,
+      text: `You've been invited to be an accountability partner for DayMark.\n\nView their devotion status (streak, completed today) at: ${acceptUrl}\n\nThis link lets you see if they completed their devotion—no devotion content is shared.`,
+      html: `<p>You've been invited to be an accountability partner for DayMark.</p><p><a href="${acceptUrl}">View their devotion status</a> (streak, completed today)</p><p>This link lets you see if they completed their devotion—no devotion content is shared.</p>`,
     });
     if (!emailRes.ok && emailRes.rateLimited) {
       return NextResponse.json({ error: emailRes.error }, { status: 429 });
@@ -78,8 +78,8 @@ export async function POST(request: Request) {
   const emailRes = await sendEmail({
     to: email,
     subject: `${session.user.name || "Someone"} invited you to be their devotion accountability partner`,
-    text: `You've been invited to be an accountability partner for Devo Tracker.\n\nView their devotion status (streak, completed today) at: ${acceptUrl}\n\nThis link lets you see if they completed their devotion—no devotion content is shared.`,
-    html: `<p>You've been invited to be an accountability partner for Devo Tracker.</p><p><a href="${acceptUrl}">View their devotion status</a> (streak, completed today)</p><p>This link lets you see if they completed their devotion—no devotion content is shared.</p>`,
+    text: `You've been invited to be an accountability partner for DayMark.\n\nView their devotion status (streak, completed today) at: ${acceptUrl}\n\nThis link lets you see if they completed their devotion—no devotion content is shared.`,
+    html: `<p>You've been invited to be an accountability partner for DayMark.</p><p><a href="${acceptUrl}">View their devotion status</a> (streak, completed today)</p><p>This link lets you see if they completed their devotion—no devotion content is shared.</p>`,
   });
   if (!emailRes.ok && emailRes.rateLimited) {
     return NextResponse.json({ error: emailRes.error }, { status: 429 });

@@ -9,7 +9,7 @@ export function HomeCTA() {
           Ready to grow?
         </h2>
         <p className="text-lg text-stone-600 dark:text-stone-300 mb-8">
-          Join Devo Tracker and build a devotion habit that sticks.
+          Join DayMark and build a devotion habit that sticks.
         </p>
         <Link
           href="/login"

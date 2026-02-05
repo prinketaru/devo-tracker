@@ -60,7 +60,7 @@ export function ReminderNotifier() {
               if (typeof localStorage !== "undefined" && localStorage.getItem(key) !== "1") {
                 localStorage.setItem(key, "1");
                 try {
-                new Notification("Devo Tracker", {
+                new Notification("DayMark", {
                   body: `You missed a day — do a devotion to keep your ${grace.graceStreakDays}-day streak!`,
                   icon: "/android-chrome-192x192.png",
                   tag: "devo-grace",
@@ -88,7 +88,7 @@ export function ReminderNotifier() {
           if (notifiedRef.current[key]) continue;
           notifiedRef.current[key] = "1";
           try {
-            new Notification("Devo Tracker", {
+            new Notification("DayMark", {
               body: "Time for your devotion.",
               icon: "/android-chrome-192x192.png",
               tag: "devo-reminder",

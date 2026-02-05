@@ -1,5 +1,5 @@
 /**
- * Email templates styled to match the Devo Tracker site.
+ * Email templates styled to match the DayMark site.
  * Colors: background #fbf7ef, text #1f1a12, muted #78716c, accent #b45309.
  */
 
@@ -21,8 +21,8 @@ function getBaseUrl(): string {
 function getUnsubscribeFooter(): { html: string; text: string } {
   const settingsUrl = `${getBaseUrl()}/settings`;
   return {
-    html: `— Devo Tracker<br><br><span style="font-size:12px;">You're receiving this because you have email notifications enabled. To manage your preferences or unsubscribe, <a href="${settingsUrl}" style="color:${STYLES.accent}; text-decoration:underline;">go to Settings</a>.</span>`,
-    text: `— Devo Tracker\n\nYou're receiving this because you have email notifications enabled. To manage your preferences or unsubscribe, go to Settings: ${settingsUrl}`,
+    html: `— DayMark<br><br><span style="font-size:12px;">You're receiving this because you have email notifications enabled. To manage your preferences or unsubscribe, <a href="${settingsUrl}" style="color:${STYLES.accent}; text-decoration:underline;">go to Settings</a>.</span>`,
+    text: `— DayMark\n\nYou're receiving this because you have email notifications enabled. To manage your preferences or unsubscribe, go to Settings: ${settingsUrl}`,
   };
 }
 
@@ -34,7 +34,7 @@ function emailWrapper(content: string): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Devo Tracker</title>
+  <title>DayMark</title>
 </head>
 <body style="margin:0; padding:0; background:#f5f5f5; font-family:${STYLES.fontSans}; -webkit-font-smoothing:antialiased;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
@@ -49,7 +49,7 @@ function emailWrapper(content: string): string {
                     <div style="width:36px; height:36px; border-radius:8px; background:${STYLES.accent}; color:#fff; font-size:18px; font-weight:600; font-family:${STYLES.fontSans}; line-height:36px; text-align:center;">D</div>
                   </td>
                   <td style="vertical-align:middle; padding-left:12px;">
-                    <div style="font-size:16px; font-weight:600; color:${STYLES.accent};">Devo Tracker</div>
+                    <div style="font-size:16px; font-weight:600; color:${STYLES.accent};">DayMark</div>
                     <div style="font-size:12px; color:${STYLES.muted};">Daily devotion, made consistent.</div>
                   </td>
                 </tr>
@@ -74,12 +74,12 @@ function emailWrapper(content: string): string {
 </html>`;
 }
 
-export const OTP_SIGNIN_SUBJECT = "Devo Tracker – Your sign-in code";
+export const OTP_SIGNIN_SUBJECT = "DayMark – Your sign-in code";
 
 export function getOtpEmail(otp: string, type: "sign-in" | "email-verification" | "forget-password"): { subject: string; text: string; html: string } {
   const content =
     type === "sign-in"
-      ? `Sign in to Devo Tracker`
+      ? `Sign in to DayMark`
       : type === "email-verification"
         ? `Verify your email address`
         : `Reset your password`;
@@ -105,7 +105,7 @@ export function getOtpEmail(otp: string, type: "sign-in" | "email-verification" 
   };
 }
 
-export const GRACE_PERIOD_SUBJECT = "Devo Tracker – You missed a day";
+export const GRACE_PERIOD_SUBJECT = "DayMark – You missed a day";
 
 export function getGracePeriodEmail(graceStreakDays: number): { subject: string; text: string; html: string } {
   const baseUrl = getBaseUrl();
@@ -144,7 +144,7 @@ ${footerText}`;
   };
 }
 
-export const REMINDER_SUBJECT = "Devo Tracker – Time for your devotion";
+export const REMINDER_SUBJECT = "DayMark – Time for your devotion";
 
 export function getReminderEmail(): { subject: string; text: string; html: string } {
   const baseUrl = getBaseUrl();
@@ -201,7 +201,7 @@ function getWeeklyMessageByCount(daysCount: number): string {
   return "You did it—a full week of devotions! Thank you for making space for what matters. Here's to another week.";
 }
 
-export const WEEKLY_DIGEST_SUBJECT = "Devo Tracker – Your weekly summary";
+export const WEEKLY_DIGEST_SUBJECT = "DayMark – Your weekly summary";
 
 export function getWeeklyDigestEmail(
   name: string,
@@ -218,7 +218,7 @@ export function getWeeklyDigestEmail(
   const footerText = getUnsubscribeFooter().text;
   const text = `Hi ${name},
 
-Your Devo Tracker weekly summary:
+Your DayMark weekly summary:
 
 • Days with devotions this week: ${daysCount} / 7
 • Total devotion entries: ${totalEntries}

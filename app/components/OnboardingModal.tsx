@@ -21,7 +21,7 @@ type Step = {
 const steps: Step[] = [
   {
     id: 1,
-    title: "Welcome to Devo Tracker! 🎉",
+    title: "Welcome to DayMark! 🎉",
     description: "Your daily companion for spiritual growth and consistency",
     icon: <FiBook className="w-12 h-12" />,
     features: [
@@ -121,7 +121,7 @@ const steps: Step[] = [
   {
     id: 6,
     title: "Customize Your Experience",
-    description: "Make Devo Tracker work for you",
+    description: "Make DayMark work for you",
     icon: <FiSettings className="w-12 h-12" />,
     features: [
       "Set your timezone and profile preferences",

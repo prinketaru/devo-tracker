@@ -58,7 +58,7 @@ export function PrintDevotionClient({ devotion }: { devotion: Devotion }) {
           <ReactMarkdown>{devotion.content}</ReactMarkdown>
         </div>
         <footer className="mt-12 pt-4 border-t border-stone-200 text-xs text-stone-500">
-          Devo Tracker — devotracker.app
+          DayMark — devotracker.app
         </footer>
       </article>
     </>
