@@ -22,11 +22,11 @@ export function DevotionCalendar({ timezone, year, month, onDateClick, filterFro
   const to = end.toISOString().slice(0, 10);
 
   useEffect(() => {
-    fetch(`/api/devotions/dates?from=${from}&to=${to}`, { credentials: "include" })
+    fetch(`/api/devotions/dates?from=${from}&to=${to}&timezone=${encodeURIComponent(timezone)}`, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { dates: [] }))
       .then((data: { dates?: string[] }) => setDates(new Set(data.dates ?? [])))
       .catch(() => {});
-  }, [from, to]);
+  }, [from, to, timezone]);
 
   const firstDay = new Date(year, month - 1, 1).getDay(); // 0 = Sun
   const daysInMonth = new Date(year, month, 0).getDate();
