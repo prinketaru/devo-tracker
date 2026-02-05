@@ -4,6 +4,7 @@ import { getDb } from "@/app/lib/mongodb";
 import { validateDevotionInput } from "@/app/lib/validation";
 
 const DEVOTIONS_COLLECTION = "devotions";
+const PREFERENCES_COLLECTION = "user_preferences";
 
 /** GET /api/devotions – list devotions (paginate, search, date filter, tag). */
 export async function GET(request: Request) {
@@ -22,6 +23,11 @@ export async function GET(request: Request) {
 
   const db = await getDb();
   const coll = db.collection(DEVOTIONS_COLLECTION);
+  const prefsColl = db.collection(PREFERENCES_COLLECTION);
+
+  // Get user's timezone
+  const prefs = await prefsColl.findOne({ userId: session.user.id });
+  const timezone = prefs?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const filter: { userId: string; createdAt?: { $gte?: Date; $lte?: Date }; tags?: string; $or?: Record<string, RegExp>[] } = {
     userId: session.user.id,
@@ -51,7 +57,7 @@ export async function GET(request: Request) {
     passage: d.passage ?? "",
     content: d.content ?? "",
     createdAt: d.createdAt,
-    date: formatDevotionDate(d.createdAt),
+    date: formatDevotionDate(d.createdAt, timezone),
     tags: Array.isArray(d.tags) ? d.tags : [],
     minutesSpent: typeof d.minutesSpent === "number" ? d.minutesSpent : undefined,
   }));
@@ -86,6 +92,11 @@ export async function POST(request: Request) {
 
   const db = await getDb();
   const coll = db.collection(DEVOTIONS_COLLECTION);
+  const prefsColl = db.collection(PREFERENCES_COLLECTION);
+
+  // Get user's timezone
+  const prefs = await prefsColl.findOne({ userId: session.user.id });
+  const timezone = prefs?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const doc: { userId: string; title: string; passage: string; content: string; createdAt: Date; tags?: string[]; minutesSpent?: number } = {
     userId: session.user.id,
@@ -100,14 +111,15 @@ export async function POST(request: Request) {
   const insertResult = await coll.insertOne(doc);
 
   const id = insertResult.insertedId.toString();
-  return NextResponse.json({ id, title, passage, content, tags, minutesSpent, createdAt: new Date() }, { status: 201 });
+  return NextResponse.json({ id, title, passage, content, tags, minutesSpent, createdAt: new Date(), date: formatDevotionDate(doc.createdAt, timezone) }, { status: 201 });
 }
 
-function formatDevotionDate(d: Date): string {
+function formatDevotionDate(d: Date, timezone: string): string {
   const date = d instanceof Date ? d : new Date(d);
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: timezone,
   });
 }

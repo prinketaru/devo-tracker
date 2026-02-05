@@ -3,6 +3,7 @@ import { getSession } from "@/app/lib/auth-server";
 import { getDb } from "@/app/lib/mongodb";
 
 const DEVOTIONS_COLLECTION = "devotions";
+const PREFERENCES_COLLECTION = "user_preferences";
 
 /** GET /api/devotions/dates?from=YYYY-MM-DD&to=YYYY-MM-DD – returns YYYY-MM-DD dates that have devotions (for calendar). */
 export async function GET(request: Request) {
@@ -20,6 +21,12 @@ export async function GET(request: Request) {
   }
 
   const db = await getDb();
+  const prefsColl = db.collection(PREFERENCES_COLLECTION);
+
+  // Get user's timezone
+  const prefs = await prefsColl.findOne({ userId: session.user.id });
+  const timezone = prefs?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const docs = await db
     .collection(DEVOTIONS_COLLECTION)
     .find({
@@ -36,10 +43,20 @@ export async function GET(request: Request) {
     new Set(
       docs.map((d) => {
         const date = d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt);
-        return date.toISOString().slice(0, 10);
+        return dateToStringInTimezone(date, timezone);
       })
     )
   );
 
   return NextResponse.json({ dates });
+}
+
+function dateToStringInTimezone(date: Date, timezone: string): string {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(date);
 }
