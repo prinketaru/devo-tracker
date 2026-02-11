@@ -5,7 +5,7 @@ import { getDb } from "@/app/lib/mongodb";
 const DEVOTIONS_COLLECTION = "devotions";
 const PREFERENCES_COLLECTION = "user_preferences";
 
-/** GET /api/user/insights – devotion stats (most active hour, top passages, total time). */
+/** GET /api/user/insights – devotion stats (most active hour, top books, total time). */
 export async function GET() {
   const session = await getSession();
   if (!session?.user?.id) {
@@ -24,8 +24,31 @@ export async function GET() {
     .toArray();
 
   const hourCounts: Record<number, number> = {};
-  const passageCounts: Record<string, number> = {};
+  const bookCounts: Record<string, number> = {};
   let totalMinutes = 0;
+
+  const getBookFromPassage = (passage: string): string | null => {
+    const tokens = passage.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return null;
+
+    const bookTokens: string[] = [];
+    let i = 0;
+
+    const first = tokens[0];
+    if (/^\d+(st|nd|rd|th)?$/i.test(first) || /^(I|II|III)$/i.test(first)) {
+      bookTokens.push(first);
+      i = 1;
+    }
+
+    for (; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (/\d/.test(token)) break;
+      bookTokens.push(token);
+    }
+
+    const book = bookTokens.join(" ").trim();
+    return book || null;
+  };
 
   for (const d of docs) {
     const dt = d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt);
@@ -35,7 +58,10 @@ export async function GET() {
 
     const passage = (d.passage ?? "").trim();
     if (passage && passage !== "—") {
-      passageCounts[passage] = (passageCounts[passage] ?? 0) + 1;
+      const book = getBookFromPassage(passage);
+      if (book) {
+        bookCounts[book] = (bookCounts[book] ?? 0) + 1;
+      }
     }
 
     const mins = (d as { minutesSpent?: number }).minutesSpent;
@@ -54,10 +80,10 @@ export async function GET() {
     }
   }
 
-  const topPassages = Object.entries(passageCounts)
+  const topBooks = Object.entries(bookCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
-    .map(([passage, count]) => ({ passage, count }));
+    .map(([book, count]) => ({ book, count }));
 
   const formatHour = (h: number) => {
     if (h === 0) return "12 AM";
@@ -70,6 +96,6 @@ export async function GET() {
     mostActiveHour: mostActiveCount > 0 ? formatHour(mostActiveHour) : null,
     totalDevotions: docs.length,
     totalMinutes: totalMinutes > 0 ? totalMinutes : null,
-    topPassages,
+    topBooks,
   });
 }

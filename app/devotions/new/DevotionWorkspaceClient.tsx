@@ -20,7 +20,7 @@ const MAX_TRACKED_MINUTES = 240; // cap at 4 hours
 
 export default function DevotionWorkspaceClient() {
   const router = useRouter();
-  const workspaceRef = useRef<{ getValues: () => { title: string; passage: string; content: string; tags: string[] } }>(null);
+  const workspaceRef = useRef<{ getValues: () => { title: string; passage: string; content: string; tags: string[]; category?: string } }>(null);
   const sessionStartRef = useRef<number>(Date.now());
   const [sessionStartedAt, setSessionStartedAt] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,7 +36,9 @@ export default function DevotionWorkspaceClient() {
     fetch("/api/user/preferences", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { defaultTemplateMarkdown?: string } | null) => {
-        if (data?.defaultTemplateMarkdown) setInitialMarkdown(data.defaultTemplateMarkdown);
+        if (data && "defaultTemplateMarkdown" in data && typeof data.defaultTemplateMarkdown === "string") {
+          setInitialMarkdown(data.defaultTemplateMarkdown);
+        }
       })
       .catch(() => {});
   }, []);
@@ -57,6 +59,7 @@ export default function DevotionWorkspaceClient() {
           passage: values.passage,
           content: values.content,
           tags: values.tags,
+          category: values.category,
           minutesSpent: minutesSpent > 0 ? minutesSpent : undefined,
         }),
       });

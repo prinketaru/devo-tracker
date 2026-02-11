@@ -37,6 +37,7 @@ export default async function DevotionViewPage({ params }: Props) {
     }),
     tags: Array.isArray(doc.tags) ? doc.tags : [],
     minutesSpent: typeof doc.minutesSpent === "number" ? doc.minutesSpent : undefined,
+    category: typeof doc.category === "string" ? doc.category : undefined,
   };
 
   return (

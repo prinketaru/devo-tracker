@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { ExportDevotionModal } from "@/app/components/ExportDevotionModal";
+import { DEVOTION_CATEGORY_LABELS } from "@/app/lib/devotion-categories";
 
 type Devotion = {
   id: string;
@@ -13,6 +14,7 @@ type Devotion = {
   date: string;
   tags: string[];
   minutesSpent?: number;
+  category?: string;
 };
 
 export function DevotionView({ devotion }: { devotion: Devotion }) {
@@ -49,8 +51,13 @@ export function DevotionView({ devotion }: { devotion: Devotion }) {
                 </>
               )}
             </p>
-            {devotion.tags.length > 0 && (
+            {(devotion.category || devotion.tags.length > 0) && (
               <div className="mt-3 flex flex-wrap gap-2">
+                {devotion.category && (
+                  <span className="rounded-full border border-stone-200 dark:border-zinc-700 bg-stone-100 dark:bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-stone-700 dark:text-stone-200">
+                    {DEVOTION_CATEGORY_LABELS[devotion.category as keyof typeof DEVOTION_CATEGORY_LABELS] ?? devotion.category}
+                  </span>
+                )}
                 {devotion.tags.map((tag) => (
                   <span
                     key={tag}

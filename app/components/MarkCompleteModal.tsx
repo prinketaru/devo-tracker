@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { DEVOTION_CATEGORIES, DEVOTION_CATEGORY_LABELS } from "@/app/lib/devotion-categories";
 
 type MarkCompleteModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { title: string; passage: string; content: string; notes?: string }) => Promise<void>;
+  onSave: (data: { title: string; passage: string; content: string; notes?: string; category?: string }) => Promise<void>;
   initialTitle?: string;
   initialPassage?: string;
 };
@@ -20,6 +21,7 @@ export function MarkCompleteModal({
   const titleRef = useRef<HTMLInputElement>(null);
   const passageRef = useRef<HTMLInputElement>(null);
   const notesRef = useRef<HTMLTextAreaElement>(null);
+  const categoryRef = useRef<HTMLSelectElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,8 +40,9 @@ export function MarkCompleteModal({
       const title = titleRef.current?.value?.trim() ?? "";
       const passage = passageRef.current?.value?.trim() ?? "";
       const notes = notesRef.current?.value?.trim() ?? "";
+      const category = categoryRef.current?.value || undefined;
 
-      await onSave({ title, passage, content: "", notes });
+      await onSave({ title, passage, content: "", notes, category });
       onClose();
     } catch (err) {
       setError("Failed to save. Please try again.");
@@ -52,7 +55,7 @@ export function MarkCompleteModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="quick-log-title"
@@ -61,7 +64,7 @@ export function MarkCompleteModal({
       }}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl"
+        className="w-full max-w-md rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b border-stone-200 dark:border-zinc-800">
@@ -116,6 +119,22 @@ export function MarkCompleteModal({
                 placeholder="A brief reflection or prayer..."
                 className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-amber-500/70 resize-none"
               />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+                Category
+              </span>
+              <select
+                ref={categoryRef}
+                defaultValue="devotion"
+                className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 outline-none focus:ring-2 focus:ring-amber-500/70"
+              >
+                {DEVOTION_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {DEVOTION_CATEGORY_LABELS[category]}
+                  </option>
+                ))}
+              </select>
             </label>
 
             {error && (

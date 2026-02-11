@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { getSession } from "@/app/lib/auth-server";
 import { getDb, parseObjectId } from "@/app/lib/mongodb";
 import { validateDevotionInput } from "@/app/lib/validation";
+import { normalizeDevotionCategory } from "@/app/lib/devotion-categories";
 
 const DEVOTIONS_COLLECTION = "devotions";
 
@@ -43,6 +44,7 @@ export async function GET(_request: Request, context: RouteContext) {
       year: "numeric",
     }),
     tags: Array.isArray(doc.tags) ? doc.tags : [],
+    category: typeof doc.category === "string" ? doc.category : "devotion",
     minutesSpent: typeof doc.minutesSpent === "number" ? doc.minutesSpent : undefined,
   });
 }
@@ -60,19 +62,22 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Invalid devotion id" }, { status: 400 });
   }
 
-  let body: { title?: string; passage?: string; content?: string; tags?: string[]; minutesSpent?: number };
+  let body: { title?: string; passage?: string; content?: string; tags?: string[]; minutesSpent?: number; category?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const updates: { title?: string; passage?: string; content?: string; tags?: string[]; minutesSpent?: number } = {};
+  const updates: { title?: string; passage?: string; content?: string; tags?: string[]; minutesSpent?: number; category?: string } = {};
   if (typeof body.title === "string") updates.title = body.title.trim();
   if (typeof body.passage === "string") updates.passage = body.passage.trim();
   if (typeof body.content === "string") updates.content = body.content;
   if (Array.isArray(body.tags)) updates.tags = body.tags.filter((t): t is string => typeof t === "string").map((t) => t.trim()).filter(Boolean);
   if (typeof body.minutesSpent === "number" && body.minutesSpent >= 0) updates.minutesSpent = body.minutesSpent;
+  if (typeof body.category === "string") {
+    updates.category = normalizeDevotionCategory(body.category);
+  }
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
@@ -101,7 +106,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Devotion not found" }, { status: 404 });
   }
 
-  const doc = result as { _id: unknown; title?: string; passage?: string; content?: string; createdAt: Date; tags?: string[]; minutesSpent?: number };
+  const doc = result as { _id: unknown; title?: string; passage?: string; content?: string; createdAt: Date; tags?: string[]; minutesSpent?: number; category?: string };
   return NextResponse.json({
     id: (doc._id as ObjectId).toString(),
     title: doc.title ?? "",
@@ -110,6 +115,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     createdAt: doc.createdAt,
     tags: doc.tags ?? [],
     minutesSpent: doc.minutesSpent,
+    category: typeof doc.category === "string" ? doc.category : "devotion",
   });
 }
 

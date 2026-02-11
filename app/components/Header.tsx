@@ -63,7 +63,7 @@ export function Header() {
           <div className="h-9 w-9 rounded-xl bg-amber-600 text-white flex items-center justify-center text-lg font-semibold shadow-sm group-hover:bg-amber-700 transition-colors">
             D
           </div>
-          <div className="flex flex-col leading-tight">
+          <div className="hidden sm:flex flex-col leading-tight">
             <span className="text-sm font-semibold tracking-wide text-stone-900 dark:text-stone-50">
               DayMark
             </span>

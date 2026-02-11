@@ -29,7 +29,7 @@ export function Hero() {
             href="/login"
             className="inline-flex items-center justify-center px-8 py-3.5 bg-amber-600 text-white rounded-xl font-semibold text-base hover:bg-amber-700 active:bg-amber-800 transition-colors shadow-lg shadow-amber-600/20"
           >
-            Get Started Free
+            Get Started
           </Link>
           <a
             href="#features"

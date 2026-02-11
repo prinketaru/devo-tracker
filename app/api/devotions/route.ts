@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/app/lib/auth-server";
 import { getDb } from "@/app/lib/mongodb";
 import { validateDevotionInput } from "@/app/lib/validation";
+import { normalizeDevotionCategory } from "@/app/lib/devotion-categories";
 
 const DEVOTIONS_COLLECTION = "devotions";
 const PREFERENCES_COLLECTION = "user_preferences";
@@ -20,6 +21,7 @@ export async function GET(request: Request) {
   const from = searchParams.get("from") ?? ""; // YYYY-MM-DD
   const to = searchParams.get("to") ?? "";   // YYYY-MM-DD
   const tag = (searchParams.get("tag") ?? "").trim();
+  const categoryParam = (searchParams.get("category") ?? "").trim();
 
   const db = await getDb();
   const coll = db.collection(DEVOTIONS_COLLECTION);
@@ -29,7 +31,7 @@ export async function GET(request: Request) {
   const prefs = await prefsColl.findOne({ userId: session.user.id });
   const timezone = prefs?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const filter: { userId: string; createdAt?: { $gte?: Date; $lte?: Date }; tags?: string; $or?: Record<string, RegExp>[] } = {
+  const filter: { userId: string; createdAt?: { $gte?: Date; $lte?: Date }; tags?: string; category?: string; $or?: Record<string, RegExp>[] } = {
     userId: session.user.id,
   };
 
@@ -39,6 +41,8 @@ export async function GET(request: Request) {
     if (to) filter.createdAt.$lte = new Date(to + "T23:59:59.999Z");
   }
   if (tag) filter.tags = tag;
+  const category = normalizeDevotionCategory(categoryParam);
+  if (category) filter.category = category;
   if (search) {
     const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     filter.$or = [{ title: re }, { passage: re }, { content: re }, { tags: re }];
@@ -59,6 +63,7 @@ export async function GET(request: Request) {
     createdAt: d.createdAt,
     date: formatDevotionDate(d.createdAt, timezone),
     tags: Array.isArray(d.tags) ? d.tags : [],
+    category: typeof d.category === "string" ? d.category : "devotion",
     minutesSpent: typeof d.minutesSpent === "number" ? d.minutesSpent : undefined,
   }));
 
@@ -72,7 +77,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { title?: string; passage?: string; content?: string; tags?: string[]; minutesSpent?: number };
+  let body: { title?: string; passage?: string; content?: string; tags?: string[]; minutesSpent?: number; category?: string };
   try {
     body = await request.json();
   } catch {
@@ -90,6 +95,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validationError }, { status: 400 });
   }
 
+  const category = normalizeDevotionCategory(body.category);
+
   const db = await getDb();
   const coll = db.collection(DEVOTIONS_COLLECTION);
   const prefsColl = db.collection(PREFERENCES_COLLECTION);
@@ -98,7 +105,7 @@ export async function POST(request: Request) {
   const prefs = await prefsColl.findOne({ userId: session.user.id });
   const timezone = prefs?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const doc: { userId: string; title: string; passage: string; content: string; createdAt: Date; tags?: string[]; minutesSpent?: number } = {
+  const doc: { userId: string; title: string; passage: string; content: string; createdAt: Date; tags?: string[]; minutesSpent?: number; category?: string } = {
     userId: session.user.id,
     title,
     passage,
@@ -107,11 +114,13 @@ export async function POST(request: Request) {
   };
   if (tags.length) doc.tags = tags;
   if (minutesSpent != null) doc.minutesSpent = minutesSpent;
+  // Default to 'devotion' if not specified
+  doc.category = category || "devotion";
 
   const insertResult = await coll.insertOne(doc);
 
   const id = insertResult.insertedId.toString();
-  return NextResponse.json({ id, title, passage, content, tags, minutesSpent, createdAt: new Date(), date: formatDevotionDate(doc.createdAt, timezone) }, { status: 201 });
+  return NextResponse.json({ id, title, passage, content, tags, minutesSpent, category: category ?? "devotion", createdAt: new Date(), date: formatDevotionDate(doc.createdAt, timezone) }, { status: 201 });
 }
 
 function formatDevotionDate(d: Date, timezone: string): string {

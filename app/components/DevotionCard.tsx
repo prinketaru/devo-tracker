@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { ShareDevotionModal } from "./ShareDevotionModal";
 import { ExportDevotionModal } from "./ExportDevotionModal";
+import { DEVOTION_CATEGORY_LABELS } from "@/app/lib/devotion-categories";
 
 type DevotionSummary = {
   id: string;
@@ -13,6 +14,7 @@ type DevotionSummary = {
   passage: string;
   summary: string;
   minutesSpent?: number;
+  category?: string;
 };
 
 type DevotionCardProps = {
@@ -78,9 +80,16 @@ export function DevotionCard({ devotion }: DevotionCardProps) {
                   </span>
                 )}
               </div>
-              <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200 shrink-0">
-                {devotion.passage}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                {devotion.category && (
+                  <span className="rounded-full border border-stone-200 bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-stone-200">
+                    {DEVOTION_CATEGORY_LABELS[devotion.category as keyof typeof DEVOTION_CATEGORY_LABELS] ?? devotion.category}
+                  </span>
+                )}
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200 shrink-0">
+                  {devotion.passage}
+                </span>
+              </div>
             </div>
             <h3 className="mt-3 text-base font-semibold text-stone-900 dark:text-stone-50">
               {devotion.title}

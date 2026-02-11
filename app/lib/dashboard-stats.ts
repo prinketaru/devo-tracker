@@ -10,12 +10,20 @@ export type DevotionSummary = {
   passage: string;
   summary: string;
   minutesSpent?: number;
+  category?: string;
 };
 
 export type DashboardData = {
   devotions: DevotionSummary[];
   weeklyStats: { label: string; value: string }[];
-  streak: { days: number; best: number; message: string; onGracePeriod?: boolean; graceStreakDays?: number };
+  streak: {
+    days: number;
+    best: number;
+    message: string;
+    onGracePeriod?: boolean;
+    graceStreakDays?: number;
+    graceTimeLeft?: string;
+  };
   todayDevotionId?: string;
 };
 
@@ -28,7 +36,6 @@ function summarize(content: string, maxLen = 120): string {
 
 /** Grace period: allow 1 missed day without breaking the streak. Miss 2+ days and streak ends. */
 const STREAK_GRACE_DAYS = 1;
-const HOURS_BEFORE_MISSED = 48;
 const MS_PER_HOUR = 1000 * 60 * 60;
 const MS_PER_DAY = MS_PER_HOUR * 24;
 
@@ -36,21 +43,25 @@ const MS_PER_DAY = MS_PER_HOUR * 24;
 function computeStreak(
   dates: Date[],
   timezone: string
-): { current: number; best: number; onGracePeriod: boolean; graceStreakDays: number } {
-  if (dates.length === 0) return { current: 0, best: 0, onGracePeriod: false, graceStreakDays: 0 };
+): { current: number; best: number; onGracePeriod: boolean; graceStreakDays: number; graceRemainingMs: number } {
+  if (dates.length === 0) return { current: 0, best: 0, onGracePeriod: false, graceStreakDays: 0, graceRemainingMs: 0 };
 
   const uniqueDays = Array.from(
     new Set(dates.map((d) => toDateStringInTimezone(d, timezone)))
   ).sort()
     .reverse();
 
+  const diffDaysBetween = (a: string, b: string): number => {
+    const aDate = new Date(a + "T00:00:00Z");
+    const bDate = new Date(b + "T00:00:00Z");
+    return Math.round((aDate.getTime() - bDate.getTime()) / MS_PER_DAY);
+  };
+
   const best = (() => {
     let run = 1;
     let bestRun = 1;
     for (let i = 1; i < uniqueDays.length; i++) {
-      const prev = new Date(uniqueDays[i - 1] + "T12:00:00");
-      const curr = new Date(uniqueDays[i] + "T12:00:00");
-      const diffDays = Math.round((prev.getTime() - curr.getTime()) / MS_PER_DAY);
+      const diffDays = diffDaysBetween(uniqueDays[i - 1], uniqueDays[i]);
       if (diffDays >= 1 && diffDays <= 1 + STREAK_GRACE_DAYS) run++;
       else run = 1;
       bestRun = Math.max(bestRun, run);
@@ -61,28 +72,42 @@ function computeStreak(
   const currentRun = (() => {
     let run = 1;
     for (let i = 1; i < uniqueDays.length; i++) {
-      const prev = new Date(uniqueDays[i - 1] + "T12:00:00");
-      const curr = new Date(uniqueDays[i] + "T12:00:00");
-      const diffDays = Math.round((prev.getTime() - curr.getTime()) / MS_PER_DAY);
+      const diffDays = diffDaysBetween(uniqueDays[i - 1], uniqueDays[i]);
       if (diffDays >= 1 && diffDays <= 1 + STREAK_GRACE_DAYS) run++;
       else break;
     }
     return run;
   })();
 
-  const mostRecentCompletionMs = Math.max(...dates.map((d) => d.getTime()));
-  const hoursSinceLast = (Date.now() - mostRecentCompletionMs) / MS_PER_HOUR;
-  const missedAfterHours = HOURS_BEFORE_MISSED;
-  const withinCurrentWindow = hoursSinceLast <= missedAfterHours;
-  const withinGraceWindow =
-    hoursSinceLast > missedAfterHours &&
-    hoursSinceLast <= missedAfterHours + STREAK_GRACE_DAYS * 24;
+  const todayStr = toDateStringInTimezone(new Date(), timezone);
+  const mostRecentDay = uniqueDays[0];
+  const daysSinceLast = diffDaysBetween(todayStr, mostRecentDay);
+
+  const withinCurrentWindow = daysSinceLast <= 1;
+  const withinGraceWindow = daysSinceLast === 2;
+
+  const graceRemainingMs = (() => {
+    if (!withinGraceWindow) return 0;
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).formatToParts(new Date());
+    const hour = parseInt(parts.find((p) => p.type === "hour")?.value ?? "0", 10);
+    const minute = parseInt(parts.find((p) => p.type === "minute")?.value ?? "0", 10);
+    const second = parseInt(parts.find((p) => p.type === "second")?.value ?? "0", 10);
+    const elapsedSeconds = hour * 3600 + minute * 60 + second;
+    const remainingSeconds = Math.max(0, 24 * 3600 - elapsedSeconds);
+    return remainingSeconds * 1000;
+  })();
 
   const current = withinCurrentWindow ? currentRun : 0;
   const onGracePeriod = withinGraceWindow && currentRun > 0;
   const graceStreakDays = onGracePeriod ? currentRun : 0;
 
-  return { current, best, onGracePeriod, graceStreakDays };
+  return { current, best, onGracePeriod, graceStreakDays, graceRemainingMs };
 }
 
 /**
@@ -103,7 +128,7 @@ function toDateStringInTimezone(date: Date, timezone: string): string {
  */
 function getWeekStartDateString(timezone: string): string {
   const now = new Date();
-  
+
   // Get current date components in the user's timezone
   const tzFormatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
@@ -118,14 +143,14 @@ function getWeekStartDateString(timezone: string): string {
   const month = parseInt(parts.find((p) => p.type === "month")?.value ?? "0", 10);
   const day = parseInt(parts.find((p) => p.type === "day")?.value ?? "0", 10);
   const weekday = parts.find((p) => p.type === "weekday")?.value ?? "Sun";
-  
+
   // Map weekday to number (0 = Sunday)
   const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   const dayOfWeek = dayMap[weekday] ?? 0;
-  
+
   // Calculate days back to Sunday
   const daysToSunday = dayOfWeek;
-  
+
   // Create Sunday date string directly (YYYY-MM-DD)
   const sundayDay = day - daysToSunday;
   // Handle month/year rollover by creating a date and formatting it
@@ -133,7 +158,7 @@ function getWeekStartDateString(timezone: string): string {
   const sundayYear = tempDate.getFullYear();
   const sundayMonth = tempDate.getMonth() + 1;
   const sundayDayFinal = tempDate.getDate();
-  
+
   return `${sundayYear}-${String(sundayMonth).padStart(2, "0")}-${String(sundayDayFinal).padStart(2, "0")}`;
 }
 
@@ -149,12 +174,26 @@ export async function getGraceStatus(
     .sort({ createdAt: -1 })
     .limit(50)
     .toArray();
-  const allDates = docs.map((d) =>
+  const devotionDocs = docs.filter((d) => {
+    const cat = (d as { category?: string }).category;
+    return cat === "devotion" || !cat;
+  });
+  const allDates = devotionDocs.map((d) =>
     d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt)
   );
   const { current, onGracePeriod, graceStreakDays } = computeStreak(allDates, timezone);
   const streak = onGracePeriod ? graceStreakDays : current;
   return { onGracePeriod, graceStreakDays, streak };
+}
+
+function formatDuration(ms: number): string {
+  if (ms <= 0) return "0m";
+  const totalMinutes = Math.ceil(ms / (1000 * 60));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h`;
+  return `${minutes}m`;
 }
 
 /** Fetch dashboard data for a user: recent devotions, weekly stats, streak. */
@@ -180,6 +219,7 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
       title: (d.title ?? "").trim() || "Untitled",
       passage: (d.passage ?? "").trim() || "—",
       summary: summarize(d.content ?? ""),
+      category: typeof (d as any).category === "string" ? (d as any).category : "devotion",
       minutesSpent: (() => {
         const mins = (d as { minutesSpent?: unknown }).minutesSpent;
         return typeof mins === "number" ? mins : undefined;
@@ -187,13 +227,17 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
     };
   });
 
-  const allDates = docs.map((d) =>
+  const devotionDocs = docs.filter((d) => {
+    const cat = (d as { category?: string }).category;
+    return cat === "devotion" || !cat;
+  });
+  const allDates = devotionDocs.map((d) =>
     d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt)
   );
 
   const userTimezone = timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const weekStartStr = getWeekStartDateString(userTimezone);
-  
+
   // Calculate week end (next Sunday) - add 7 days to the start date string
   const [startYear, startMonth, startDay] = weekStartStr.split("-").map(Number);
   const startDate = new Date(startYear, startMonth - 1, startDay);
@@ -201,8 +245,9 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
   const weekEndStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`;
 
   const uniqueDaysThisWeek = new Set<string>();
-  allDates.forEach((d) => {
-    const dateStr = toDateStringInTimezone(d, userTimezone);
+  devotionDocs.forEach((d) => {
+    const createdAt = d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt);
+    const dateStr = toDateStringInTimezone(createdAt, userTimezone);
     if (dateStr >= weekStartStr && dateStr < weekEndStr) {
       uniqueDaysThisWeek.add(dateStr);
     }
@@ -210,7 +255,7 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
 
   const thisWeekCount = uniqueDaysThisWeek.size;
   const daysInWeek = 7;
-  const thisWeekDocs = docs.filter((d) => {
+  const thisWeekDocs = devotionDocs.filter((d) => {
     const dateStr = toDateStringInTimezone(d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt), userTimezone);
     return dateStr >= weekStartStr && dateStr < weekEndStr;
   });
@@ -228,7 +273,7 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
     { label: "Avg. time", value: avgMinutes != null ? `${avgMinutes} min` : "—" },
   ];
 
-  const { current: streakDays, best: bestStreak, onGracePeriod, graceStreakDays } = computeStreak(allDates, userTimezone);
+  const { current: streakDays, best: bestStreak, onGracePeriod, graceStreakDays, graceRemainingMs } = computeStreak(allDates, userTimezone);
 
   const streakMessages = [
     "Keep going — you're building consistency.",
@@ -237,14 +282,14 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
   ];
   const message =
     onGracePeriod
-      ? "You missed today — do a devotion to keep your streak!"
+      ? "You missed yesterday — do a devotion to keep your streak!"
       : streakDays > 0
         ? streakMessages[Math.min(streakDays - 1, streakMessages.length - 1)]
         : "Log a devotion to start your streak.";
 
   // Check if today already has a devotion
   const todayStr = toDateStringInTimezone(new Date(), userTimezone);
-  const todayDevotion = docs.find((d) => {
+  const todayDevotion = devotionDocs.find((d) => {
     const createdAt = d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt);
     const devotionDateStr = toDateStringInTimezone(createdAt, userTimezone);
     return devotionDateStr === todayStr;
@@ -260,6 +305,7 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
       message,
       onGracePeriod,
       graceStreakDays,
+      graceTimeLeft: onGracePeriod ? formatDuration(graceRemainingMs) : undefined,
     },
     todayDevotionId,
   };

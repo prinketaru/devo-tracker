@@ -6,7 +6,7 @@ type Insights = {
   mostActiveHour: string | null;
   totalDevotions: number;
   totalMinutes: number | null;
-  topPassages: { passage: string; count: number }[];
+  topBooks?: { book: string; count: number }[];
 };
 
 export function DevotionInsights() {
@@ -16,12 +16,32 @@ export function DevotionInsights() {
   useEffect(() => {
     fetch("/api/user/insights", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data: Insights | null) => setInsights(data ?? null))
+      .then((data: Insights | null) => {
+        if (!data) return setInsights(null);
+        const normalized = {
+          ...data,
+          topBooks: Array.isArray(data.topBooks) ? data.topBooks : [],
+        };
+        setInsights(normalized);
+      })
       .catch(() => setInsights(null))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading || !insights || insights.totalDevotions < 2) return null;
+  if (loading) {
+    return (
+      <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm animate-pulse">
+        <div className="h-5 w-40 rounded bg-stone-200 dark:bg-zinc-800" />
+        <div className="mt-4 space-y-3">
+          <div className="h-10 rounded-lg bg-stone-200 dark:bg-zinc-800" />
+          <div className="h-10 rounded-lg bg-stone-200 dark:bg-zinc-800" />
+          <div className="h-10 rounded-lg bg-stone-200 dark:bg-zinc-800" />
+        </div>
+      </section>
+    );
+  }
+
+  if (!insights || insights.totalDevotions < 2) return null;
 
   const stats: { label: string; value: string }[] = [];
   if (insights.mostActiveHour) {
@@ -49,15 +69,15 @@ export function DevotionInsights() {
             <span className="font-semibold text-stone-900 dark:text-stone-100">{stat.value}</span>
           </div>
         ))}
-        {insights.topPassages.length > 0 && (
+        {insights.topBooks && insights.topBooks.length > 0 && (
           <div className="pt-2 border-t border-stone-200 dark:border-zinc-800">
             <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
-              Top passages
+              Top books
             </p>
             <ul className="space-y-1">
-              {insights.topPassages.map((p) => (
-                <li key={p.passage} className="flex justify-between text-sm">
-                  <span className="text-stone-700 dark:text-stone-200 truncate max-w-[180px]">{p.passage}</span>
+              {insights.topBooks.map((p) => (
+                <li key={p.book} className="flex justify-between text-sm">
+                  <span className="text-stone-700 dark:text-stone-200 truncate max-w-[180px]">{p.book}</span>
                   <span className="text-stone-500 dark:text-stone-400 shrink-0">{p.count}x</span>
                 </li>
               ))}

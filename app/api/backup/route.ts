@@ -31,6 +31,7 @@ export async function GET() {
       passage: d.passage ?? "",
       content: d.content ?? "",
       createdAt: d.createdAt,
+      category: d.category,
       tags: d.tags ?? [],
       minutesSpent: d.minutesSpent,
     })),
@@ -82,13 +83,14 @@ export async function POST(request: Request) {
 
   if (Array.isArray(body.devotions) && body.devotions.length > 0) {
     const toInsert = body.devotions
-      .filter((d): d is { title?: string; passage?: string; content?: string; createdAt?: string; tags?: string[]; minutesSpent?: number } => typeof d === "object" && d !== null)
+      .filter((d): d is { title?: string; passage?: string; content?: string; createdAt?: string; tags?: string[]; minutesSpent?: number; category?: string } => typeof d === "object" && d !== null)
       .map((d) => ({
         userId,
         title: typeof d.title === "string" ? d.title : "",
         passage: typeof d.passage === "string" ? d.passage : "",
         content: typeof d.content === "string" ? d.content : "",
         createdAt: d.createdAt ? new Date(d.createdAt) : new Date(),
+        category: typeof d.category === "string" ? d.category : undefined,
         tags: Array.isArray(d.tags) ? d.tags.filter((t): t is string => typeof t === "string") : [],
         minutesSpent: typeof d.minutesSpent === "number" ? d.minutesSpent : undefined,
       }));

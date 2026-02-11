@@ -15,6 +15,7 @@ type DevotionCalendarProps = {
 
 export function DevotionCalendar({ timezone, year, month, onDateClick, filterFrom, filterTo }: DevotionCalendarProps) {
   const [dates, setDates] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0);
@@ -22,10 +23,12 @@ export function DevotionCalendar({ timezone, year, month, onDateClick, filterFro
   const to = end.toISOString().slice(0, 10);
 
   useEffect(() => {
+    setLoading(true);
     fetch(`/api/devotions/dates?from=${from}&to=${to}&timezone=${encodeURIComponent(timezone)}`, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { dates: [] }))
       .then((data: { dates?: string[] }) => setDates(new Set(data.dates ?? [])))
-      .catch(() => {});
+      .catch(() => {})
+      .then(() => setLoading(false));
   }, [from, to, timezone]);
 
   const firstDay = new Date(year, month - 1, 1).getDay(); // 0 = Sun
@@ -37,44 +40,57 @@ export function DevotionCalendar({ timezone, year, month, onDateClick, filterFro
   return (
     <div className="rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
       <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 mb-3">{monthLabel}</h3>
-      <div className="grid grid-cols-7 gap-1 text-center text-xs">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-          <div key={d} className="font-medium text-stone-500 dark:text-stone-400 py-1">
-            {d}
-          </div>
-        ))}
-        {blanks.map((i) => (
-          <div key={`b-${i}`} className="py-2" />
-        ))}
-        {days.map((d) => {
-          const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-          const hasDevotion = dates.has(dateStr);
-          const inFilterRange =
-            (filterFrom && dateStr >= filterFrom && !filterTo) ||
-            (filterTo && dateStr <= filterTo && !filterFrom) ||
-            (filterFrom && filterTo && dateStr >= filterFrom && dateStr <= filterTo);
-          const baseClass = `py-2 rounded ${hasDevotion ? "bg-amber-500/20 dark:bg-amber-400/20 text-amber-800 dark:text-amber-200 font-medium" : "text-stone-600 dark:text-stone-400"} ${inFilterRange ? "ring-2 ring-blue-500/70 dark:ring-blue-400/70" : ""}`;
-          const clickableClass = onDateClick ? " cursor-pointer hover:ring-2 hover:ring-amber-500/50 dark:hover:ring-amber-400/50" : "";
-          const content = <>{d}</>;
-          if (onDateClick) {
-            return (
-              <button
-                key={d}
-                type="button"
-                onClick={() => onDateClick(dateStr)}
-                className={baseClass + clickableClass}
-              >
-                {content}
-              </button>
-            );
-          }
-          return (
-            <div key={d} className={baseClass}>
-              {content}
+      {loading ? (
+        <div className="grid grid-cols-7 gap-1 text-center text-xs animate-pulse">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <div key={d} className="font-medium text-stone-400/70 dark:text-stone-500/70 py-1">
+              {d}
             </div>
-          );
-        })}
-      </div>
+          ))}
+          {Array.from({ length: blanks.length + days.length }, (_, i) => (
+            <div key={`s-${i}`} className="h-7 rounded bg-stone-200 dark:bg-zinc-800" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-7 gap-1 text-center text-xs">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <div key={d} className="font-medium text-stone-500 dark:text-stone-400 py-1">
+              {d}
+            </div>
+          ))}
+          {blanks.map((i) => (
+            <div key={`b-${i}`} className="py-2" />
+          ))}
+          {days.map((d) => {
+            const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            const hasDevotion = dates.has(dateStr);
+            const inFilterRange =
+              (filterFrom && dateStr >= filterFrom && !filterTo) ||
+              (filterTo && dateStr <= filterTo && !filterFrom) ||
+              (filterFrom && filterTo && dateStr >= filterFrom && dateStr <= filterTo);
+            const baseClass = `py-2 rounded ${hasDevotion ? "bg-amber-500/20 dark:bg-amber-400/20 text-amber-800 dark:text-amber-200 font-medium" : "text-stone-600 dark:text-stone-400"} ${inFilterRange ? "ring-2 ring-blue-500/70 dark:ring-blue-400/70" : ""}`;
+            const clickableClass = onDateClick ? " cursor-pointer hover:ring-2 hover:ring-amber-500/50 dark:hover:ring-amber-400/50" : "";
+            const content = <>{d}</>;
+            if (onDateClick) {
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => onDateClick(dateStr)}
+                  className={baseClass + clickableClass}
+                >
+                  {content}
+                </button>
+              );
+            }
+            return (
+              <div key={d} className={baseClass}>
+                {content}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

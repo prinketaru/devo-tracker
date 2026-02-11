@@ -22,6 +22,7 @@ type DevotionData = {
   date: string;
   tags?: string[];
   minutesSpent?: number;
+  category?: string;
 };
 
 const MAX_TRACKED_MINUTES = 240;
@@ -30,7 +31,7 @@ type Props = { devotionId: string };
 
 export default function EditDevotionClient({ devotionId }: Props) {
   const router = useRouter();
-  const workspaceRef = useRef<{ getValues: () => { title: string; passage: string; content: string; tags: string[] } }>(null);
+  const workspaceRef = useRef<{ getValues: () => { title: string; passage: string; content: string; tags: string[]; category?: string } }>(null);
   const sessionStartRef = useRef<number | null>(null);
   const [sessionStartedAt, setSessionStartedAt] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,6 +82,7 @@ export default function EditDevotionClient({ devotionId }: Props) {
           passage: values.passage,
           content: values.content,
           tags: values.tags,
+          category: values.category,
           minutesSpent: minutesSpent > 0 ? minutesSpent : undefined,
         }),
       });
@@ -163,6 +165,7 @@ export default function EditDevotionClient({ devotionId }: Props) {
             date: devotion.date,
             tags: devotion.tags ?? [],
             minutesSpent: devotion.minutesSpent,
+            category: devotion.category,
           }}
           isOpen={exportOpen}
           onClose={() => setExportOpen(false)}
@@ -174,6 +177,7 @@ export default function EditDevotionClient({ devotionId }: Props) {
             initialTitle={devotion.title}
             initialPassage={devotion.passage}
             initialTags={devotion.tags ?? []}
+            initialCategory={devotion.category ?? "devotion"}
             sessionStartedAt={sessionStartedAt}
           />
         </div>

@@ -8,6 +8,7 @@ export type Devotion = {
   createdAt: Date;
   tags?: string[];
   minutesSpent?: number;
+  category?: string;
 };
 
 /** Single reminder (stored in user_preferences.reminders). */

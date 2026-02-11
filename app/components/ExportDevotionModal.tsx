@@ -90,12 +90,12 @@ export function ExportDevotionModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="export-devotion-title"
     >
-      <div className="w-full max-w-md rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl p-6 shadow-xl">
         <h2 id="export-devotion-title" className="text-lg font-semibold text-stone-900 dark:text-stone-100">
           Export devotion
         </h2>

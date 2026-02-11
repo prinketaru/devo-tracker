@@ -202,12 +202,12 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-title"
     >
-      <div className="relative w-full max-w-2xl rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-2xl rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-2xl overflow-hidden">
         {/* Progress bar */}
         <div className="h-1 bg-stone-200 dark:bg-zinc-800">
           <div

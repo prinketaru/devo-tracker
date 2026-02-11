@@ -7,6 +7,7 @@ import { Header } from "@/app/components/Header";
 import { Footer } from "@/app/components/Footer";
 import { DevotionCard } from "@/app/components/DevotionCard";
 import { DevotionCalendar } from "@/app/components/DevotionCalendar";
+import { DEVOTION_CATEGORIES, DEVOTION_CATEGORY_LABELS } from "@/app/lib/devotion-categories";
 
 type DevotionItem = {
   id: string;
@@ -17,6 +18,7 @@ type DevotionItem = {
   summary?: string;
   tags?: string[];
   minutesSpent?: number;
+  category?: string;
 };
 
 /** Shape returned by /api/devotions (includes createdAt). */
@@ -38,8 +40,10 @@ export default function DevotionsListPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [tag, setTag] = useState("");
+  const [category, setCategory] = useState("");
   const [timezone, setTimezone] = useState("UTC");
   const [nextDateTarget, setNextDateTarget] = useState<"from" | "to">("from");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
   const [calMonth, setCalMonth] = useState(now.getMonth() + 1);
@@ -54,6 +58,7 @@ export default function DevotionsListPage() {
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     if (tag) params.set("tag", tag);
+    if (category) params.set("category", category);
     setLoading(true);
     fetch(`/api/devotions?${params}`, { credentials: "include" })
       .then((res) => {
@@ -77,7 +82,7 @@ export default function DevotionsListPage() {
       })
       .catch(() => setDevotions([]))
       .finally(() => setLoading(false));
-  }, [page, search, from, to, tag, router]);
+  }, [page, search, from, to, tag, category, router]);
 
   useEffect(() => {
     fetch("/api/user/preferences", { credentials: "include" })
@@ -116,7 +121,7 @@ export default function DevotionsListPage() {
       <Header />
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-50">All Devotions</h1>
+          <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-50">All Notes</h1>
           <Link
             href="/dashboard"
             className="text-sm text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200"
@@ -128,35 +133,24 @@ export default function DevotionsListPage() {
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
           <div>
             <div className="rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 mb-4">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="text"
                   placeholder="Search title, passage, content, tags..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-                  className="flex-1 min-w-[160px] rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
+                  className="flex-1 min-w-[180px] rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
                 />
-                <input
-                  type="date"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                  className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
-                />
-                <input
-                  type="date"
-                  value={to}
-                  onChange={(e) => setTo(e.target.value)}
-                  className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
-                />
-                <input
-                  type="text"
-                  placeholder="Tag"
-                  value={tag}
-                  onChange={(e) => setTag(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-                  className="w-24 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
-                />
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen((open) => !open)}
+                  className="rounded-md border border-stone-200 dark:border-zinc-700 px-3 py-2 text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800"
+                  aria-expanded={filtersOpen}
+                  aria-controls="notes-filters"
+                >
+                  {filtersOpen ? "Hide filters" : "Show filters"}
+                </button>
                 <button
                   type="button"
                   onClick={applyFilters}
@@ -165,15 +159,52 @@ export default function DevotionsListPage() {
                   Apply
                 </button>
               </div>
+
+              {filtersOpen && (
+                <div id="notes-filters" className="mt-3 flex flex-wrap gap-2">
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
+                  >
+                    <option value="">All categories</option>
+                    {DEVOTION_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {DEVOTION_CATEGORY_LABELS[cat]}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="date"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                    className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="date"
+                    value={to}
+                    onChange={(e) => setTo(e.target.value)}
+                    className="rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Tag"
+                    value={tag}
+                    onChange={(e) => setTag(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && applyFilters()}
+                    className="w-28 rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
+                  />
+                </div>
+              )}
             </div>
 
             {loading ? (
               <p className="text-sm text-stone-500 dark:text-stone-400">Loading…</p>
             ) : devotions.length === 0 ? (
               <div className="rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 text-center">
-                <p className="text-stone-600 dark:text-stone-400">No devotions match.</p>
+                <p className="text-stone-600 dark:text-stone-400">No notes match.</p>
                 <Link href="/devotions/new" className="mt-4 inline-block text-amber-600 dark:text-amber-400 hover:underline">
-                  Create one
+                  Create a note
                 </Link>
               </div>
             ) : (
@@ -188,6 +219,7 @@ export default function DevotionsListPage() {
                         title: d.title || "Untitled",
                         passage: d.passage || "—",
                         summary: d.summary ?? summarize(d.content ?? ""),
+                        category: d.category,
                         minutesSpent: d.minutesSpent,
                       }}
                     />

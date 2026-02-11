@@ -16,7 +16,23 @@ export function Footer() {
               DayMark
             </span>
           </Link>
-          <FooterActions />
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex items-center gap-4 text-sm">
+              <Link
+                href="/privacy"
+                className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+              >
+                Terms
+              </Link>
+            </div>
+            <FooterActions />
+          </div>
         </div>
         <p className="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
           © {new Date().getFullYear()} DayMark — Daily devotion, made consistent.<br />

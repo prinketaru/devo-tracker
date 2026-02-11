@@ -556,12 +556,14 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
               {partners.map((p) => (
                 <li
                   key={p.id}
-                  className="flex items-center justify-between rounded-lg border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-700 dark:text-stone-200"
+                  className="flex flex-col gap-3 rounded-lg border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-3 text-sm text-stone-700 dark:text-stone-200 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <span>{p.email}</span>
-                  <span className="text-xs text-stone-500 dark:text-stone-400 mr-2">
-                    {p.status === "accepted" ? "Accepted" : "Pending"}
-                  </span>
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <span className="truncate">{p.email}</span>
+                    <span className="text-xs text-stone-500 dark:text-stone-400">
+                      {p.status === "accepted" ? "Accepted" : "Pending"}
+                    </span>
+                  </div>
                   <button
                     type="button"
                     onClick={async () => {
@@ -580,7 +582,7 @@ export function SettingsForm({ defaultName, email }: SettingsFormProps) {
                       }
                     }}
                     disabled={revokeLoading === p.id}
-                    className="rounded px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
+                    className="w-full sm:w-auto rounded px-2 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
                   >
                     {revokeLoading === p.id ? "Revoking…" : "Revoke"}
                   </button>

@@ -20,13 +20,15 @@ export function VerseOfTheDay() {
 
   if (loading || !verse) {
     return (
-      <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
+      <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm animate-pulse">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-400 mb-2">
           Verse of the Day
         </p>
-        <p className="text-sm text-stone-500 dark:text-stone-400">
-          Loading…
-        </p>
+        <div className="space-y-2">
+          <div className="h-4 w-11/12 rounded bg-stone-200 dark:bg-zinc-800" />
+          <div className="h-4 w-9/12 rounded bg-stone-200 dark:bg-zinc-800" />
+          <div className="h-3 w-32 rounded bg-stone-200 dark:bg-zinc-800" />
+        </div>
       </section>
     );
   }

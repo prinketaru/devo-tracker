@@ -15,6 +15,7 @@ export type DevotionExportData = {
   date: string;
   tags: string[];
   minutesSpent?: number;
+  category?: string;
 };
 
 function safeFilename(title: string): string {
@@ -36,6 +37,7 @@ export function exportAsMarkdown(devotion: DevotionExportData) {
     "",
     `**Date:** ${devotion.date}`,
     devotion.passage !== "—" ? `**Passage:** ${devotion.passage}` : "",
+    devotion.category ? `**Category:** ${devotion.category}` : "",
     devotion.minutesSpent && devotion.minutesSpent > 0 ? `**Time spent:** ${devotion.minutesSpent} min` : "",
     devotion.tags.length > 0 ? `**Tags:** ${devotion.tags.join(", ")}` : "",
     "",
@@ -62,6 +64,7 @@ export function exportAsPlainText(devotion: DevotionExportData) {
     "",
     `Date: ${devotion.date}`,
     devotion.passage !== "—" ? `Passage: ${devotion.passage}` : "",
+    devotion.category ? `Category: ${devotion.category}` : "",
     devotion.minutesSpent && devotion.minutesSpent > 0 ? `Time spent: ${devotion.minutesSpent} min` : "",
     devotion.tags.length > 0 ? `Tags: ${devotion.tags.join(", ")}` : "",
     "",
@@ -78,6 +81,7 @@ export async function exportAsDocx(devotion: DevotionExportData) {
   const meta: string[] = [
     devotion.date,
     devotion.passage !== "—" ? devotion.passage : "",
+    devotion.category ? devotion.category : "",
     devotion.minutesSpent && devotion.minutesSpent > 0 ? `${devotion.minutesSpent} min` : "",
     devotion.tags.length > 0 ? devotion.tags.join(", ") : "",
   ].filter(Boolean);

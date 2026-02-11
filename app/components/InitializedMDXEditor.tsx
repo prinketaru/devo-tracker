@@ -13,6 +13,15 @@ import {
   BoldItalicUnderlineToggles,
   BlockTypeSelect,
   ListsToggle,
+  CreateLink,
+  InsertThematicBreak,
+  InsertTable,
+  StrikeThroughSupSubToggles,
+  Separator,
+  linkPlugin,
+  linkDialogPlugin,
+  tablePlugin,
+  imagePlugin,
   type MDXEditorMethods,
   type MDXEditorProps,
 } from "@mdxeditor/editor";
@@ -34,15 +43,29 @@ export default function InitializedMDXEditor({
         headingsPlugin(),
         listsPlugin(),
         quotePlugin(),
+        linkPlugin(),
+        linkDialogPlugin(),
+        imagePlugin(),
+        tablePlugin(),
         thematicBreakPlugin(),
         markdownShortcutPlugin(),
         toolbarPlugin({
           toolbarContents: () => (
             <>
               <UndoRedo />
+              <Separator />
               <BoldItalicUnderlineToggles />
-              <ListsToggle />
+              <StrikeThroughSupSubToggles />
+              <Separator />
               <BlockTypeSelect />
+              <Separator />
+              <CreateLink />
+              <Separator />
+              <ListsToggle />
+              <Separator />
+              <InsertTable />
+              <Separator />
+              <InsertThematicBreak />
             </>
           ),
         }),

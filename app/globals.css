@@ -160,31 +160,225 @@ h6 {
   min-height: 0;
 }
 
+/* ===== TOOLBAR STYLING ===== */
+
 .devotion-editor .mdxeditor-toolbar {
   flex: 0 0 auto;
   flex-wrap: wrap;
   gap: 2px;
+  padding: 8px;
+  border-bottom: 1px solid #e7e1d7;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1f1a12;
 }
 
-/* Touch-friendly toolbar on mobile */
+.dark .devotion-editor .mdxeditor-toolbar {
+  border-bottom: 1px solid #3b352c;
+  background: #18181b;
+  color: #f9fafb;
+}
+
+/* Toolbar buttons */
+.devotion-editor .mdxeditor-toolbar button,
+.devotion-editor .mdxeditor-toolbar [role="button"] {
+  font-weight: 400;
+  border-radius: 6px;
+  padding: 6px 10px;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.devotion-editor .mdxeditor-toolbar button:hover,
+.devotion-editor .mdxeditor-toolbar [role="button"]:hover {
+  background: rgba(180, 83, 9, 0.1);
+  border-color: rgba(180, 83, 9, 0.2);
+}
+
+.devotion-editor .mdxeditor-toolbar button[data-active="true"],
+.devotion-editor .mdxeditor-toolbar button[aria-pressed="true"] {
+  background: rgba(180, 83, 9, 0.15);
+  border-color: rgba(180, 83, 9, 0.3);
+  font-weight: 500;
+}
+
+.dark .devotion-editor .mdxeditor-toolbar button:hover,
+.dark .devotion-editor .mdxeditor-toolbar [role="button"]:hover {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.dark .devotion-editor .mdxeditor-toolbar button[data-active="true"],
+.dark .devotion-editor .mdxeditor-toolbar button[aria-pressed="true"] {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Toolbar separators */
+.devotion-editor .mdxeditor-toolbar [data-toolbar-item-name="separator"] {
+  width: 1px;
+  height: 24px;
+  background: #d6d3d1;
+  margin: 0 2px;
+}
+
+.dark .devotion-editor .mdxeditor-toolbar [data-toolbar-item-name="separator"] {
+  background: #52525b;
+}
+
+/* Compact scrolling toolbar on mobile */
 @media (max-width: 640px) {
+  .devotion-editor .mdxeditor-toolbar {
+    padding: 4px 8px;
+    gap: 4px;
+    flex-wrap: nowrap;
+    /* Force single line */
+    overflow-x: auto;
+    /* Scroll horizontally */
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling */
+    max-width: 100%;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .devotion-editor .mdxeditor-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .devotion-editor .mdxeditor-toolbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   .devotion-editor .mdxeditor-toolbar button,
   .devotion-editor .mdxeditor-toolbar [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 0.5rem;
+    min-height: 32px;
+    min-width: 32px;
+    padding: 4px;
+    flex-shrink: 0;
+    /* Don't shrink buttons */
+  }
+
+  .devotion-editor .mdxeditor-toolbar [data-toolbar-item-name="separator"] {
+    flex-shrink: 0;
   }
 }
+
+.devotion-editor .mdxeditor-toolbar button,
+.devotion-editor .mdxeditor-toolbar [role="button"],
+.devotion-editor .mdxeditor-toolbar svg,
+.devotion-editor .mdxeditor-toolbar svg * {
+  color: inherit !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+.dark .devotion-editor .mdxeditor-toolbar button,
+.dark .devotion-editor .mdxeditor-toolbar [role="button"],
+.dark .devotion-editor .mdxeditor-toolbar svg,
+.dark .devotion-editor .mdxeditor-toolbar svg * {
+  background: transparent;
+  color: #f9fafb !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+/* Toolbar select dropdowns */
+/* Toolbar select dropdowns */
+.devotion-editor .mdxeditor-select-trigger {
+  border-radius: 6px;
+  padding: 6px 10px;
+  border: 1px solid #e7e5e4;
+  /* stone-200 */
+  background: white;
+  transition: all 0.15s ease;
+  color: #1f1a12;
+  font-size: 0.875rem;
+  /* text-sm */
+}
+
+.devotion-editor .mdxeditor-select-trigger:hover {
+  border-color: rgba(180, 83, 9, 0.3);
+  background: rgba(180, 83, 9, 0.05);
+}
+
+.dark .devotion-editor .mdxeditor-select-trigger {
+  border-color: #3f3f46;
+  /* zinc-700 */
+  background: #18181b;
+  /* zinc-900 */
+  color: #f9fafb;
+}
+
+.dark .devotion-editor .mdxeditor-select-trigger:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.devotion-editor .mdxeditor-select-content {
+  background: white;
+  border: 1px solid #e7e5e4;
+  /* stone-200 */
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* shadow-lg */
+  padding: 4px;
+  color: #1f1a12;
+  z-index: 50;
+}
+
+.dark .devotion-editor .mdxeditor-select-content {
+  background: #18181b;
+  /* zinc-900 */
+  border-color: #3f3f46;
+  /* zinc-700 */
+  color: #f9fafb;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.devotion-editor .mdxeditor-select-content [data-highlighted],
+.devotion-editor .mdxeditor-select-content [data-state="checked"] {
+  background: #fafaf9;
+  /* stone-50 */
+  color: #1f1a12;
+  outline: none;
+}
+
+.dark .devotion-editor .mdxeditor-select-content [data-highlighted],
+.dark .devotion-editor .mdxeditor-select-content [data-state="checked"] {
+  background: #27272a;
+  /* zinc-800 */
+  color: #f9fafb;
+}
+
+/* Dropdown items */
+.devotion-editor .mdxeditor-select-item {
+  padding: 8px 12px;
+  /* standard padding */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+  /* text-sm */
+}
+
+.dark .devotion-editor .mdxeditor-select-item {
+  color: #f9fafb;
+}
+
+
+/* ===== CONTENT EDITABLE AREA ===== */
 
 .devotion-editor .mdxeditor-root-contenteditable {
   color: var(--foreground);
   font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
-  line-height: 1.3;
+  line-height: 1.6;
   flex: 1;
   min-height: 0;
   overflow: auto;
-  font-size: 1rem; /* 16px avoids iOS zoom on focus */
-  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+  font-size: 1rem;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -195,6 +389,21 @@ h6 {
 .devotion-editor .mdxeditor-root-contenteditable h5,
 .devotion-editor .mdxeditor-root-contenteditable h6 {
   font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.devotion-editor .mdxeditor-root-contenteditable h1 {
+  font-size: 2em;
+}
+
+.devotion-editor .mdxeditor-root-contenteditable h2 {
+  font-size: 1.5em;
+}
+
+.devotion-editor .mdxeditor-root-contenteditable h3 {
+  font-size: 1.25em;
 }
 
 .devotion-editor .mdxeditor-root-contenteditable p,
@@ -211,21 +420,6 @@ h6 {
   color: inherit;
 }
 
-.devotion-editor .mdxeditor-toolbar {
-  border-bottom: 1px solid #e7e1d7;
-  background: rgba(255, 255, 255, 0.9);
-  color: #1f1a12;
-}
-
-.devotion-editor .mdxeditor-toolbar button,
-.devotion-editor .mdxeditor-toolbar [role="button"],
-.devotion-editor .mdxeditor-toolbar svg,
-.devotion-editor .mdxeditor-toolbar svg * {
-  color: inherit !important;
-  fill: currentColor !important;
-  stroke: currentColor !important;
-}
-
 .dark .devotion-editor {
   color: var(--foreground);
 }
@@ -238,47 +432,286 @@ h6 {
   color: var(--foreground);
 }
 
-.dark .devotion-editor .mdxeditor-toolbar {
-  border-bottom: 1px solid #3b352c;
-  background: #18181b; /* zinc-900 (matches editor box) */
-  color: #f9fafb; /* zinc-50 */
+/* ===== CODE BLOCKS ===== */
+
+.devotion-editor .mdxeditor-root-contenteditable pre {
+  background: #f5f5f4;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  margin: 1em 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
 }
 
-.dark .devotion-editor .mdxeditor-toolbar button,
-.dark .devotion-editor .mdxeditor-toolbar [role="button"],
-.dark .devotion-editor .mdxeditor-toolbar svg,
-.dark .devotion-editor .mdxeditor-toolbar svg * {
+.dark .devotion-editor .mdxeditor-root-contenteditable pre {
+  background: #1a1a1a;
+  border-color: #3b352c;
+}
+
+.devotion-editor .mdxeditor-root-contenteditable code {
+  background: #f5f5f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
+}
+
+.dark .devotion-editor .mdxeditor-root-contenteditable code {
+  background: #27272a;
+}
+
+.devotion-editor .mdxeditor-root-contenteditable pre code {
   background: transparent;
-  color: #f9fafb !important;
-  fill: currentColor !important;
-  stroke: currentColor !important;
+  padding: 0;
+  border-radius: 0;
 }
 
-.dark .devotion-editor .mdxeditor-toolbar button:hover,
-.dark .devotion-editor .mdxeditor-toolbar [role="button"]:hover {
-  background: #111827; /* slightly lighter than toolbar bg */
+/* ===== TABLES ===== */
+
+.devotion-editor .mdxeditor-root-contenteditable table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #e7e5e4;
 }
 
-.dark .devotion-editor .mdxeditor-select-content {
-  background: #18181b; /* zinc-900 */
-  color: #f9fafb; /* zinc-50 */
+.dark .devotion-editor .mdxeditor-root-contenteditable table {
+  border-color: #3b352c;
 }
 
-.dark .devotion-editor .mdxeditor-select-content [data-highlighted] {
-  background: #0f172a; /* slate-900-ish */
-  color: #e5e7eb; /* gray-200 */
+.devotion-editor .mdxeditor-root-contenteditable th,
+.devotion-editor .mdxeditor-root-contenteditable td {
+  border: 1px solid #e7e5e4;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.dark .devotion-editor .mdxeditor-root-contenteditable th,
+.dark .devotion-editor .mdxeditor-root-contenteditable td {
+  border-color: #3b352c;
+}
+
+.devotion-editor .mdxeditor-root-contenteditable th {
+  background: #f5f5f4;
+  font-weight: 600;
+}
+
+.dark .devotion-editor .mdxeditor-root-contenteditable th {
+  background: #27272a;
+}
+
+/* ===== LINKS ===== */
+
+.devotion-editor .mdxeditor-root-contenteditable a {
+  color: #b45309;
+  text-decoration: underline;
+  text-decoration-color: rgba(180, 83, 9, 0.3);
+  transition: all 0.15s ease;
+}
+
+.devotion-editor .mdxeditor-root-contenteditable a:hover {
+  text-decoration-color: #b45309;
+}
+
+.dark .devotion-editor .mdxeditor-root-contenteditable a {
+  color: #f59e0b;
+  text-decoration-color: rgba(245, 158, 11, 0.3);
+}
+
+.dark .devotion-editor .mdxeditor-root-contenteditable a:hover {
+  text-decoration-color: #f59e0b;
+}
+
+/* Link dialog */
+.devotion-editor .mdxeditor-link-editor,
+.devotion-editor [role="dialog"],
+.devotion-editor .mdxeditor-popup-container>div {
+  background: white;
+  border: 1px solid #e7e1d7;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.dark .devotion-editor .mdxeditor-link-editor,
+.dark .devotion-editor [role="dialog"],
+.dark .devotion-editor .mdxeditor-popup-container>div {
+  background: #27272a;
+  border-color: #52525b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  color: #f9fafb;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.devotion-editor .mdxeditor-link-editor input,
+.devotion-editor [role="dialog"] input,
+.devotion-editor .mdxeditor-popup-container input {
+  padding: 8px 10px;
+  color: #1f1a12;
+  transition: all 0.15s ease;
+}
+
+.devotion-editor .mdxeditor-link-editor input:focus,
+.devotion-editor [role="dialog"] input:focus,
+.devotion-editor .mdxeditor-popup-container input:focus {
+  outline: none;
+  border-color: #b45309;
+  box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.15);
+}
+
+.dark .devotion-editor .mdxeditor-link-editor input,
+.dark .devotion-editor [role="dialog"] input,
+.dark .devotion-editor .mdxeditor-popup-container input {
+  background: #18181b;
+  border-color: #52525b;
+  color: #f9fafb;
+}
+
+.dark .devotion-editor .mdxeditor-link-editor input:focus,
+.dark .devotion-editor [role="dialog"] input:focus,
+.dark .devotion-editor .mdxeditor-popup-container input:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+/* Dialog buttons */
+.devotion-editor .mdxeditor-link-editor button,
+.devotion-editor [role="dialog"] button,
+.devotion-editor .mdxeditor-popup-container button {
+  background: #b45309;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.devotion-editor .mdxeditor-link-editor button:hover,
+.devotion-editor [role="dialog"] button:hover,
+.devotion-editor .mdxeditor-popup-container button:hover {
+  background: #92400e;
+}
+
+.dark .devotion-editor .mdxeditor-link-editor button,
+.dark .devotion-editor [role="dialog"] button,
+.dark .devotion-editor .mdxeditor-popup-container button {
+  background: #f59e0b;
+  color: #1f1a12;
+}
+
+.dark .devotion-editor .mdxeditor-link-editor button:hover,
+.dark .devotion-editor [role="dialog"] button:hover,
+.dark .devotion-editor .mdxeditor-popup-container button:hover {
+  background: #fbbf24;
+}
+
+/* Table editor */
+.devotion-editor .mdxeditor-table-editor,
+.devotion-editor [data-radix-popper-content-wrapper] {
+  background: white;
+  border: 1px solid #e7e1d7;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .devotion-editor .mdxeditor-table-editor,
+.dark .devotion-editor [data-radix-popper-content-wrapper] {
+  background: #27272a;
+  border-color: #52525b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.devotion-editor .mdxeditor-table-editor button,
+.devotion-editor [data-radix-popper-content-wrapper] button {
+  color: #1f1a12;
+  background: transparent;
+  border: 1px solid #e7e1d7;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.devotion-editor .mdxeditor-table-editor button:hover,
+.devotion-editor [data-radix-popper-content-wrapper] button:hover {
+  background: rgba(180, 83, 9, 0.1);
+  border-color: rgba(180, 83, 9, 0.3);
+}
+
+.dark .devotion-editor .mdxeditor-table-editor button,
+.dark .devotion-editor [data-radix-popper-content-wrapper] button {
+  color: #f9fafb;
+  border-color: #52525b;
+}
+
+.dark .devotion-editor .mdxeditor-table-editor button:hover,
+.dark .devotion-editor [data-radix-popper-content-wrapper] button:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+
+/* ===== BLOCKQUOTES ===== */
+
+.devotion-editor .mdxeditor-root-contenteditable blockquote {
+  border-left: 4px solid #b45309;
+  padding-left: 16px;
+  margin: 1em 0;
+  font-style: italic;
+  color: #78716c;
+}
+
+.dark .devotion-editor .mdxeditor-root-contenteditable blockquote {
+  border-left-color: #f59e0b;
+  color: #a8a29e;
+}
+
+/* ===== HORIZONTAL RULES ===== */
+
+.devotion-editor .mdxeditor-root-contenteditable hr {
+  border: none;
+  border-top: 2px solid #e7e5e4;
+  margin: 2em 0;
+}
+
+.dark .devotion-editor .mdxeditor-root-contenteditable hr {
+  border-top-color: #3b352c;
+}
+
+/* ===== LISTS ===== */
+
+.devotion-editor .mdxeditor-root-contenteditable ul,
+.devotion-editor .mdxeditor-root-contenteditable ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.devotion-editor .mdxeditor-root-contenteditable li {
+  margin: 0.25em 0;
 }
 
 /* Lighter-feeling toolbar icons/buttons */
-.devotion-editor .mdxeditor-toolbar button,
-.devotion-editor .mdxeditor-toolbar [role="button"] {
-  font-weight: 400;
-}
-
 .devotion-editor .mdxeditor-toolbar svg,
 .devotion-editor .mdxeditor-toolbar svg * {
   stroke-width: 0;
 }
+
+
 
 /* Hide MDX Editor popup container when empty (it's appended to body and shows as a box at bottom of page) */
 .mdxeditor-popup-container:empty {

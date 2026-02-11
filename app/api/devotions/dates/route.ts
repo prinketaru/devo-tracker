@@ -25,10 +25,10 @@ export async function GET(request: Request) {
   const prefsColl = db.collection(PREFERENCES_COLLECTION);
 
   // Get user's timezone - use param if provided, otherwise fetch from preferences
-  let timezone = timezoneParam;
+  let timezone: string = timezoneParam || "";
   if (!timezone) {
     const prefs = await prefsColl.findOne({ userId: session.user.id });
-    timezone = prefs?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+    timezone = prefs?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone ?? "UTC";
   }
 
   // Expand the query range to include times across timezones

@@ -13,6 +13,8 @@ import { VerseOfTheDay } from "@/app/components/VerseOfTheDay";
 import { DashboardStatsSection } from "@/app/components/DashboardStatsSection";
 import { ReminderBanner } from "@/app/components/ReminderBanner";
 import { OnboardingWrapper } from "@/app/components/OnboardingWrapper";
+import { AnnouncementBanner } from "@/app/components/AnnouncementBanner";
+import { getAnnouncements } from "@/app/lib/announcements";
 
 const PREFERENCES_COLLECTION = "user_preferences";
 
@@ -34,6 +36,8 @@ export default async function DashboardPage() {
 
   const { devotions, weeklyStats, streak, todayDevotionId } = await getDashboardData(session.user.id, timezone);
   const devotionHistory = devotions;
+  const announcements = await getAnnouncements();
+  const latestAnnouncement = announcements[0];
 
   return (
     <main className="min-h-screen bg-stone-50 dark:bg-zinc-950">
@@ -41,6 +45,11 @@ export default async function DashboardPage() {
       <UserPreferencesInit />
       <Header />
       <div className="max-w-5xl mx-auto px-6 py-12">
+        {latestAnnouncement && (
+          <div className="mb-6">
+            <AnnouncementBanner announcement={latestAnnouncement} />
+          </div>
+        )}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-stone-900 dark:text-stone-50">
@@ -79,13 +88,18 @@ export default async function DashboardPage() {
                 </span>
                 {streak.onGracePeriod && (
                   <span className="ml-2 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-200">
-                    Missed today
+                    Missed yesterday
                   </span>
                 )}
               </div>
               <p className={`mt-2 text-sm ${streak.onGracePeriod ? "font-medium text-amber-800 dark:text-amber-200" : "text-stone-600 dark:text-stone-300"}`}>
                 {streak.message}
               </p>
+              {streak.onGracePeriod && streak.graceTimeLeft && (
+                <p className="mt-1 text-xs text-amber-700 dark:text-amber-200">
+                  Time left before streak ends: {streak.graceTimeLeft}
+                </p>
+              )}
             </div>
             <div className="rounded-xl border border-amber-200 dark:border-amber-400/30 bg-white/70 dark:bg-zinc-900/60 px-4 py-3 text-right">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">

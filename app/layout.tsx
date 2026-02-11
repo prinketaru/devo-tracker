@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import Script from "next/script";
 import { ThemeProvider } from "@/app/components/ThemeProvider";
 import { ReminderNotifier } from "@/app/components/ReminderNotifier";
 import { ServiceWorkerRegistration } from "@/app/components/ServiceWorkerRegistration";
 import { KeyboardShortcuts } from "@/app/components/KeyboardShortcuts";
+import NotificationPermission from "@/app/components/NotificationPermission";
 import "./globals.css";
 
 const inter = Inter({
@@ -49,6 +51,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Script
+        defer
+        src="https://cloud.umami.is/script.js"
+        data-website-id="58cd52c8-a192-460c-ad28-69d507e3038d"
+      />
       <body className={`${inter.variable} ${playfair.variable} antialiased`}>
         <script
           dangerouslySetInnerHTML={{
@@ -58,6 +65,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ServiceWorkerRegistration />
           <ReminderNotifier />
+          <NotificationPermission />
           <KeyboardShortcuts />
           {children}
         </ThemeProvider>

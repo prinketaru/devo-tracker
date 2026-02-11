@@ -22,7 +22,7 @@ export function MarkCompleteButton({ timezone, todayDevotionId }: MarkCompleteBu
     setIsModalOpen(true);
   };
 
-  const handleSave = async (data: { title: string; passage: string; content: string; notes?: string }) => {
+  const handleSave = async (data: { title: string; passage: string; content: string; notes?: string; category?: string }) => {
     const title = data.title.trim() || "Devotion completed";
     const passage = data.passage.trim() || "—";
     const content = data.notes?.trim() ? `**Notes:**\n\n${data.notes.trim()}` : "";
@@ -30,7 +30,7 @@ export function MarkCompleteButton({ timezone, todayDevotionId }: MarkCompleteBu
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ title, passage, content }),
+      body: JSON.stringify({ title, passage, content, category: data.category }),
     });
     if (!res.ok) {
       throw new Error("Failed to save");

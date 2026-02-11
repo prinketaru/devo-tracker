@@ -21,11 +21,13 @@ export function ServiceWorkerRegistration() {
       return;
     }
     navigator.serviceWorker
-      .register("/sw.js")
+      .register("/firebase-messaging-sw.js", { scope: "/" })
       .then((reg) => {
-        reg.update().catch(() => {});
+        // Registration successful
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("Service Worker registration failed:", err);
+      });
   }, []);
 
   return null;
