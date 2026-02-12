@@ -20,8 +20,7 @@ function todayInTimezone(timezone: string): string {
   return `${year}-${month}-${day}`;
 }
 
-/** POST /api/cron/send-grace-period-emails – call with CRON_SECRET; sends grace period warnings to users who missed a day. */
-export async function POST(request: Request) {
+async function sendGracePeriodEmails(request: Request) {
   const authHeader = request.headers.get("authorization");
   const secret = process.env.CRON_SECRET;
   if (!secret || authHeader !== `Bearer ${secret}`) {
@@ -61,4 +60,14 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ok: true, sent });
+}
+
+/** POST /api/cron/send-grace-period-emails – call with CRON_SECRET; sends grace period warnings to users who missed a day. */
+export async function POST(request: Request) {
+  return sendGracePeriodEmails(request);
+}
+
+/** GET /api/cron/send-grace-period-emails – same as POST, supports cron services that default to GET */
+export async function GET(request: Request) {
+  return sendGracePeriodEmails(request);
 }

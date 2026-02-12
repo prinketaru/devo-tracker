@@ -10,7 +10,7 @@ const DEVOTIONS_COLLECTION = "completed_devotions"; // Or wherever you check for
 // Actually looking at dashboard-stats, it checks "devotions" collection for category="devotion"
 const CONTENT_COLLECTION = "devotions";
 
-export async function GET(req: Request) {
+async function handleReminders(req: Request) {
     try {
         const authHeader = req.headers.get("authorization");
         if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -180,4 +180,12 @@ export async function GET(req: Request) {
             { status: 500 }
         );
     }
+}
+
+export async function GET(req: Request) {
+    return handleReminders(req);
+}
+
+export async function POST(req: Request) {
+    return handleReminders(req);
 }

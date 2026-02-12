@@ -21,8 +21,7 @@ function toHHmm(hour: number, minute: number): string {
   return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
 }
 
-/** POST /api/cron/send-reminder-emails – call with CRON_SECRET; sends reminder emails to users whose reminder time is now (in their TZ). */
-export async function POST(request: Request) {
+async function sendReminderEmails(request: Request) {
   const authHeader = request.headers.get("authorization");
   const secret = process.env.CRON_SECRET;
   if (!secret || authHeader !== `Bearer ${secret}`) {
@@ -56,4 +55,14 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ok: true, sent });
+}
+
+/** POST /api/cron/send-reminder-emails – call with CRON_SECRET; sends reminder emails to users whose reminder time is now (in their TZ). */
+export async function POST(request: Request) {
+  return sendReminderEmails(request);
+}
+
+/** GET /api/cron/send-reminder-emails – same as POST, supports cron services that default to GET */
+export async function GET(request: Request) {
+  return sendReminderEmails(request);
 }

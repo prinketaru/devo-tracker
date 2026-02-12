@@ -38,13 +38,15 @@ function getWeekStartDateString(timezone: string): string {
   return `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, "0")}-${String(sunday.getDate()).padStart(2, "0")}`;
 }
 
-/** POST /api/cron/send-weekly-digest – call with CRON_SECRET; sends weekly summary to users with weeklyDigest. */
-export async function POST(request: Request) {
+async function sendWeeklyDigest(request: Request) {
   const authHeader = request.headers.get("authorization");
   const secret = process.env.CRON_SECRET;
   if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const startTime = Date.now();
+  const MAX_EXECUTION_TIME = 25000; // 25 seconds to leave buffer before 30s timeout
 
   const db = await getDb();
   const prefsColl = db.collection(PREFERENCES_COLLECTION);
@@ -52,10 +54,19 @@ export async function POST(request: Request) {
 
   const prefsDocs = await prefsColl.find({ weeklyDigest: true }).toArray();
   let sent = 0;
+  let processed = 0;
 
   for (const doc of prefsDocs) {
+    // Check if approaching timeout
+    if (Date.now() - startTime > MAX_EXECUTION_TIME) {
+      console.log(`[Weekly Digest] Stopping early due to timeout risk. Processed ${processed}/${prefsDocs.length}`);
+      break;
+    }
+
+    processed++;
     const userId = doc.userId as string;
     const timezone = (doc.timezone as string) || "UTC";
+
     const user = await findUserByAuthId(userId);
     const email = user?.email;
     if (!email || typeof email !== "string") continue;
@@ -93,8 +104,30 @@ export async function POST(request: Request) {
     const { subject, text, html } = getWeeklyDigestEmail(name, count, devotionsInWeek.length);
     const res = await sendEmail({ to: email, subject, text, html });
     if (res.ok) sent++;
-    else if (res.rateLimited) break;
+    else if (res.rateLimited) {
+      console.log(`[Weekly Digest] Rate limited after ${sent} emails`);
+      break;
+    }
   }
 
-  return NextResponse.json({ ok: true, sent });
+  const executionTime = Date.now() - startTime;
+  console.log(`[Weekly Digest] Sent ${sent}/${processed} emails in ${executionTime}ms`);
+
+  return NextResponse.json({
+    ok: true,
+    sent,
+    processed,
+    totalUsers: prefsDocs.length,
+    executionTimeMs: executionTime
+  });
+}
+
+/** POST /api/cron/send-weekly-digest – call with CRON_SECRET; sends weekly summary to users with weeklyDigest. */
+export async function POST(request: Request) {
+  return sendWeeklyDigest(request);
+}
+
+/** GET /api/cron/send-weekly-digest – same as POST, supports cron services that default to GET */
+export async function GET(request: Request) {
+  return sendWeeklyDigest(request);
 }
