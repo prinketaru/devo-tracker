@@ -18,8 +18,8 @@ function toDateStringInTimezone(date: Date, timezone: string): string {
   return formatter.format(date);
 }
 
-/** Get start of current week (Sunday) in timezone as YYYY-MM-DD. */
-function getWeekStartDateString(timezone: string): string {
+/** Get start of PREVIOUS week (Sunday) in timezone as YYYY-MM-DD. */
+function getPreviousWeekStartDateString(timezone: string): string {
   const now = new Date();
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
@@ -34,8 +34,11 @@ function getWeekStartDateString(timezone: string): string {
   const weekday = parts.find((p) => p.type === "weekday")?.value ?? "Sun";
   const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   const daysBack = dayMap[weekday] ?? 0;
-  const sunday = new Date(year, month - 1, day - daysBack);
-  return `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, "0")}-${String(sunday.getDate()).padStart(2, "0")}`;
+  // Get current week's Sunday, then subtract 7 days to get previous week's Sunday
+  const currentSunday = new Date(year, month - 1, day - daysBack);
+  const previousSunday = new Date(currentSunday);
+  previousSunday.setDate(currentSunday.getDate() - 7);
+  return `${previousSunday.getFullYear()}-${String(previousSunday.getMonth() + 1).padStart(2, "0")}-${String(previousSunday.getDate()).padStart(2, "0")}`;
 }
 
 async function sendWeeklyDigest(request: Request) {
@@ -71,7 +74,7 @@ async function sendWeeklyDigest(request: Request) {
     const email = user?.email;
     if (!email || typeof email !== "string") continue;
 
-    const weekStartStr = getWeekStartDateString(timezone);
+    const weekStartStr = getPreviousWeekStartDateString(timezone);
     const [startYear, startMonth, startDay] = weekStartStr.split("-").map(Number);
     const weekEndDate = new Date(startYear, startMonth - 1, startDay);
     weekEndDate.setDate(weekEndDate.getDate() + 7);
