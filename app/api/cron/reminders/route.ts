@@ -1,15 +1,22 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/app/lib/mongodb";
-import { getMessaging } from "@/app/lib/firebase-admin";
 import { getGraceStatus } from "@/app/lib/dashboard-stats";
 
-export const dynamic = 'force-dynamic'; // Prevent caching
+export const dynamic = "force-dynamic";
 
 const PREFERENCES_COLLECTION = "user_preferences";
-const DEVOTIONS_COLLECTION = "completed_devotions"; // Or wherever you check for completion
-// Actually looking at dashboard-stats, it checks "devotions" collection for category="devotion"
 const CONTENT_COLLECTION = "devotions";
 
+/**
+ * Reminder cron handler.
+ *
+ * Firebase Cloud Messaging has been removed. Push notifications are
+ * currently disabled pending integration of a new provider.
+ *
+ * The cron still runs so that logic for computing which users need
+ * notifications (timezone-aware, grace period checks) is maintained
+ * and ready to be connected to the new provider.
+ */
 async function handleReminders(req: Request) {
     try {
         const authHeader = req.headers.get("authorization");
@@ -20,159 +27,125 @@ async function handleReminders(req: Request) {
         const db = await getDb();
         const prefsColl = db.collection(PREFERENCES_COLLECTION);
         const usersColl = db.collection("user");
-        // We need to check if they completed a devotion today
         const contentColl = db.collection(CONTENT_COLLECTION);
 
-        // 1. Find users with FCM tokens
-        const usersWithTokens = await usersColl
-            .find({ fcmToken: { $exists: true, $ne: null } })
-            .toArray();
+        const allUsers = await usersColl.find({}).toArray();
 
-        if (usersWithTokens.length === 0) {
-            return NextResponse.json({ message: "No users with FCM tokens found" });
+        if (allUsers.length === 0) {
+            return NextResponse.json({ message: "No users found" });
         }
 
-        const messagesToSend: any[] = [];
         let processedUsers = 0;
+        const pendingNotifications: {
+            userId: string;
+            type: "reminder" | "streak_rescue";
+            title: string;
+            body: string;
+        }[] = [];
 
-        for (const user of usersWithTokens) {
+        for (const user of allUsers) {
             processedUsers++;
             const userId = user.id || user._id.toString();
 
-            // Get User Preferences
-            const prefs = await prefsColl.findOne({ userId: userId });
+            const prefs = await prefsColl.findOne({ userId });
 
-            // Defaults
             const timezone = (prefs?.timezone as string) || "UTC";
             const reminders = (prefs?.reminders as { id: string; time: string }[]) || [];
             const allowGraceWarnings = prefs?.gracePeriodWarnings !== false;
 
-            // Calculate User's Local Time
             const now = new Date();
             const formatter = new Intl.DateTimeFormat("en-US", {
                 timeZone: timezone,
                 hour: "2-digit",
                 minute: "2-digit",
-                hour12: false, // 00-23
+                hour12: false,
             });
             const parts = formatter.formatToParts(now);
-            const hourStr = parts.find(p => p.type === "hour")?.value || "00";
-            const minuteStr = parts.find(p => p.type === "minute")?.value || "00";
+            const hourStr = parts.find((p) => p.type === "hour")?.value ?? "00";
+            const minuteStr = parts.find((p) => p.type === "minute")?.value ?? "00";
 
             const currentHour = parseInt(hourStr, 10);
             const currentMinute = parseInt(minuteStr, 10);
-            const currentTimeStr = `${hourStr}:${minuteStr}`; // HH:MM
+            const currentTimeStr = `${hourStr}:${minuteStr}`;
 
-            // Helper: Check completion for "today" in user's timezone
             const todayInUserTz = new Intl.DateTimeFormat("en-CA", {
                 timeZone: timezone,
                 year: "numeric",
                 month: "2-digit",
-                day: "2-digit"
-            }).format(now); // YYYY-MM-DD
+                day: "2-digit",
+            }).format(now);
 
             const recentDevotion = await contentColl.findOne({
-                userId: userId,
+                userId,
                 category: "devotion",
-                createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+                createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
             });
 
             let completedToday = false;
             if (recentDevotion) {
-                const dDate = recentDevotion.createdAt instanceof Date ? recentDevotion.createdAt : new Date(recentDevotion.createdAt);
-                const dDateStr = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(dDate);
-                if (dDateStr === todayInUserTz) {
-                    completedToday = true;
-                }
+                const dDate =
+                    recentDevotion.createdAt instanceof Date
+                        ? recentDevotion.createdAt
+                        : new Date(recentDevotion.createdAt);
+                const dDateStr = new Intl.DateTimeFormat("en-CA", {
+                    timeZone: timezone,
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                }).format(dDate);
+                if (dDateStr === todayInUserTz) completedToday = true;
             }
 
-            // Logic 1: Scheduled Reminders
-            // Match exact HH:MM
-            const hasReminderForNow = reminders.some(r => r.time === currentTimeStr);
+            const hasReminderNow = reminders.some((r) => r.time === currentTimeStr);
+            const isDefaultTime =
+                reminders.length === 0 && currentHour === 18 && currentMinute === 0;
 
-            // Default Fallback: If NO reminders set, assume 6 PM (18:00)
-            const isDefaultTime = reminders.length === 0 && currentHour === 18 && currentMinute === 0;
-
-            if ((hasReminderForNow || isDefaultTime) && !completedToday) {
-                messagesToSend.push({
-                    token: user.fcmToken,
-                    notification: {
-                        title: "Time to pray 🙏",
-                        body: "Take a moment with God today.",
-                    },
-                    data: { type: "reminder" }
+            if ((hasReminderNow || isDefaultTime) && !completedToday) {
+                pendingNotifications.push({
+                    userId,
+                    type: "reminder",
+                    title: "Time to pray 🙏",
+                    body: "Take a moment with God today.",
                 });
             }
 
-            // Logic 2: Streak Rescue (Grace Period Warning)
-            // Check at 9:00 AM and 8:00 PM
-            if (allowGraceWarnings && (currentHour === 9 || currentHour === 20) && currentMinute === 0) {
-                // Only check if we didn't already send a reminder in this same loop
-                const alreadySending = messagesToSend.some(m => m.token === user.fcmToken);
-
-                if (!alreadySending && !completedToday) {
-                    const { onGracePeriod, graceStreakDays } = await getGraceStatus(userId, timezone);
-
+            if (
+                allowGraceWarnings &&
+                (currentHour === 9 || currentHour === 20) &&
+                currentMinute === 0 &&
+                !completedToday
+            ) {
+                const alreadyQueued = pendingNotifications.some(
+                    (n) => n.userId === userId
+                );
+                if (!alreadyQueued) {
+                    const { onGracePeriod, graceStreakDays } = await getGraceStatus(
+                        userId,
+                        timezone
+                    );
                     if (onGracePeriod) {
-                        messagesToSend.push({
-                            token: user.fcmToken,
-                            notification: {
-                                title: "🔥 Streak Frozen!",
-                                body: `You missed yesterday. Complete a devotion now to save your ${graceStreakDays}-day streak!`,
-                            },
-                            data: { type: "streak_rescue" }
+                        pendingNotifications.push({
+                            userId,
+                            type: "streak_rescue",
+                            title: "🔥 Streak Frozen!",
+                            body: `You missed yesterday. Complete a devotion now to save your ${graceStreakDays}-day streak!`,
                         });
                     }
                 }
             }
         }
 
-        if (messagesToSend.length === 0) {
-            return NextResponse.json({ message: "No notifications need to be sent this hour." });
-        }
-
-        // Send Batch (Multicast doesn't support different bodies per token easily without grouping)
-        // Use sendEach or group by message type.
-        // For simplicity and volume, let's group by "title/body".
-
-        // Grouping
-        const batches = new Map<string, string[]>(); // key: JSON(notification), val: tokens[]
-
-        for (const msg of messagesToSend) {
-            const key = JSON.stringify(msg.notification);
-            if (!batches.has(key)) {
-                batches.set(key, []);
-            }
-            batches.get(key)?.push(msg.token);
-        }
-
-        let successCount = 0;
-        let failureCount = 0;
-
-        for (const [key, tokens] of batches.entries()) {
-            const notification = JSON.parse(key);
-            // Chunk triggers if > 500 tokens (Firebase limit)
-            const CHUNK_SIZE = 500;
-            for (let i = 0; i < tokens.length; i += CHUNK_SIZE) {
-                const chunk = tokens.slice(i, i + CHUNK_SIZE);
-                const response = await getMessaging().sendEachForMulticast({
-                    notification,
-                    tokens: chunk
-                });
-                successCount += response.successCount;
-                failureCount += response.failureCount;
-            }
-        }
-
-        console.log(`[Cron] Sent ${successCount} notifications, failed ${failureCount}. Processed ${processedUsers} users.`);
+        // TODO: send pendingNotifications via new push provider
+        console.log(
+            `[Cron] Computed ${pendingNotifications.length} pending notifications for ${processedUsers} users. Push delivery is pending a new provider.`
+        );
 
         return NextResponse.json({
             success: true,
-            sent: successCount,
-            failed: failureCount,
-            processedUsers
+            processedUsers,
+            pendingNotifications: pendingNotifications.length,
+            note: "Push delivery disabled pending new provider integration.",
         });
-
     } catch (error) {
         console.error("Cron Error:", error);
         return NextResponse.json(

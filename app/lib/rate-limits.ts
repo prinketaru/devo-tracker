@@ -112,3 +112,25 @@ export async function recordOtpSent(email: string): Promise<void> {
   const key = `otp_${sanitizeKey(email.toLowerCase())}_${thisHourUTC()}`;
   await incrementCount(key);
 }
+
+const FEEDBACK_PER_USER_PER_DAY = 10;
+
+export type FeedbackLimitResult =
+  | { allowed: true }
+  | { allowed: false; reason: string };
+
+/** Check if this user can submit more feedback today (10/day). */
+export async function checkFeedbackLimit(userId: string): Promise<FeedbackLimitResult> {
+  const key = `feedback_user_${sanitizeKey(userId)}_${todayUTC()}`;
+  const count = await getCount(key);
+  if (count >= FEEDBACK_PER_USER_PER_DAY) {
+    return { allowed: false, reason: "Too many feedback submissions today. Please try again tomorrow." };
+  }
+  return { allowed: true };
+}
+
+/** Record a feedback submission for this user. Call only after successful send. */
+export async function recordFeedbackSent(userId: string): Promise<void> {
+  const key = `feedback_user_${sanitizeKey(userId)}_${todayUTC()}`;
+  await incrementCount(key);
+}

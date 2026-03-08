@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 export type AnnouncementBannerData = {
   slug: string;
@@ -41,20 +44,23 @@ export function AnnouncementBanner({ announcement }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/80 p-4 sm:p-5 shadow-sm">
+    <div className="rounded-2xl border border-stone-200 dark:border-[#2a2720] bg-white/90 dark:bg-[#171510]/80 p-4 sm:p-5 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link href={`/announcements/${announcement.slug}`} className="block group">
           <div className="flex flex-wrap items-center gap-2">
             {announcement.category && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+              <Badge
+                variant="secondary"
+                className="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200 uppercase tracking-wide text-xs"
+              >
                 {announcement.category}
-              </span>
+              </Badge>
             )}
-            <span className="text-sm font-semibold text-stone-900 dark:text-stone-100 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
+            <span className="text-sm font-semibold text-stone-900 dark:text-[#d6d3c8] group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
               {announcement.title}
             </span>
           </div>
-          <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
+          <p className="mt-1 text-sm text-stone-600 dark:text-[#b8b5ac]">
             Read the latest announcement →
           </p>
         </Link>
@@ -65,15 +71,16 @@ export function AnnouncementBanner({ announcement }: Props) {
           >
             View details
           </Link>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleDismiss}
-            className="rounded-md p-1.5 text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+            className="h-8 w-8 text-stone-500 dark:text-[#7e7b72]"
             title="Dismiss this announcement"
             aria-label="Dismiss announcement banner"
           >
-            <span className="text-lg">×</span>
-          </button>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>

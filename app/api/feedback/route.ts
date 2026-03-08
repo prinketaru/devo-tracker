@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/app/lib/auth-server";
+import { checkFeedbackLimit, recordFeedbackSent } from "@/app/lib/rate-limits";
 
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_FEEDBACK_WEBHOOK_URL;
 
@@ -9,6 +10,11 @@ export async function POST(request: Request) {
   const session = await getSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rateLimit = await checkFeedbackLimit(session.user.id);
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ error: rateLimit.reason }, { status: 429 });
   }
 
   const body = (await request.json().catch(() => null)) as {
@@ -59,5 +65,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to send feedback." }, { status: 502 });
   }
 
+  await recordFeedbackSent(session.user.id);
   return NextResponse.json({ ok: true });
 }

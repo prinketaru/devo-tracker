@@ -9,8 +9,10 @@ export default async function AccountabilityAcceptPage({ searchParams }: Props) 
 
   if (!token) {
     return (
-      <main className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-6">
-        <p className="text-sm text-stone-600 dark:text-stone-400">Invalid or missing invite link.</p>
+      <main className="min-h-screen bg-[#F9F8F5] dark:bg-[#171510] flex items-center justify-center p-6">
+        <div className="max-w-sm w-full rounded-xl border border-stone-200 dark:border-[#2a2720] bg-white dark:bg-[#1e1c18] p-8 text-center shadow-sm">
+          <p className="text-sm text-stone-500 dark:text-[#7e7b72]">Invalid or missing invite link.</p>
+        </div>
       </main>
     );
   }
@@ -20,8 +22,10 @@ export default async function AccountabilityAcceptPage({ searchParams }: Props) 
 
   if (!doc) {
     return (
-      <main className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-6">
-        <p className="text-sm text-stone-600 dark:text-stone-400">Invalid or expired invite link.</p>
+      <main className="min-h-screen bg-[#F9F8F5] dark:bg-[#171510] flex items-center justify-center p-6">
+        <div className="max-w-sm w-full rounded-xl border border-stone-200 dark:border-[#2a2720] bg-white dark:bg-[#1e1c18] p-8 text-center shadow-sm">
+          <p className="text-sm text-stone-500 dark:text-[#7e7b72]">Invalid or expired invite link.</p>
+        </div>
       </main>
     );
   }

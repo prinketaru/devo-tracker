@@ -1,20 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Lora } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/app/components/ThemeProvider";
 import { ReminderNotifier } from "@/app/components/ReminderNotifier";
 import { ServiceWorkerRegistration } from "@/app/components/ServiceWorkerRegistration";
 import { KeyboardShortcuts } from "@/app/components/KeyboardShortcuts";
 import NotificationPermission from "@/app/components/NotificationPermission";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const lora = Lora({
+  variable: "--font-lora",
   subsets: ["latin"],
 });
 
@@ -56,10 +58,10 @@ export default function RootLayout({
         src="https://cloud.umami.is/script.js"
         data-website-id="58cd52c8-a192-460c-ad28-69d507e3038d"
       />
-      <body className={`${inter.variable} ${playfair.variable} antialiased`}>
+      <body className={`${inter.variable} ${lora.variable} antialiased`}>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);})();`,
+            __html: `(function(){var t=localStorage.getItem("theme");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);document.body&&document.body.classList.toggle("dark",d);})();`,
           }}
         />
         <ThemeProvider>
@@ -67,8 +69,10 @@ export default function RootLayout({
           <ReminderNotifier />
           <NotificationPermission />
           <KeyboardShortcuts />
+          <Toaster richColors closeButton />
           {children}
         </ThemeProvider>
+
       </body>
     </html>
   );

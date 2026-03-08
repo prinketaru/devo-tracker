@@ -11,9 +11,19 @@ type DevotionCalendarProps = {
   /** Optional filter range (YYYY-MM-DD); dates in range are highlighted as "shown". */
   filterFrom?: string;
   filterTo?: string;
+  /** If true, the month/year label above the grid is hidden (useful when parent renders navigation). */
+  hideLabel?: boolean;
 };
 
-export function DevotionCalendar({ timezone, year, month, onDateClick, filterFrom, filterTo }: DevotionCalendarProps) {
+export function DevotionCalendar({
+  timezone,
+  year,
+  month,
+  onDateClick,
+  filterFrom,
+  filterTo,
+  hideLabel = false,
+}: DevotionCalendarProps) {
   const [dates, setDates] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +37,7 @@ export function DevotionCalendar({ timezone, year, month, onDateClick, filterFro
     fetch(`/api/devotions/dates?from=${from}&to=${to}&timezone=${encodeURIComponent(timezone)}`, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : { dates: [] }))
       .then((data: { dates?: string[] }) => setDates(new Set(data.dates ?? [])))
-      .catch(() => {})
+      .catch(() => { })
       .then(() => setLoading(false));
   }, [from, to, timezone]);
 
@@ -37,24 +47,28 @@ export function DevotionCalendar({ timezone, year, month, onDateClick, filterFro
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const monthLabel = new Date(year, month - 1).toLocaleString("default", { month: "long", year: "numeric" });
 
+  const DAYS_OF_WEEK = ["S", "M", "T", "W", "T", "F", "S"];
+
   return (
-    <div className="rounded-xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-      <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 mb-3">{monthLabel}</h3>
+    <div className="w-full">
+      {!hideLabel && (
+        <p className="text-xs font-medium text-stone-500 dark:text-[#7e7b72] mb-3">{monthLabel}</p>
+      )}
       {loading ? (
         <div className="grid grid-cols-7 gap-1 text-center text-xs animate-pulse">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div key={d} className="font-medium text-stone-400/70 dark:text-stone-500/70 py-1">
+          {DAYS_OF_WEEK.map((d, i) => (
+            <div key={i} className="font-medium text-stone-400/70 dark:text-stone-500/70 py-1">
               {d}
             </div>
           ))}
           {Array.from({ length: blanks.length + days.length }, (_, i) => (
-            <div key={`s-${i}`} className="h-7 rounded bg-stone-200 dark:bg-zinc-800" />
+            <div key={`s-${i}`} className="h-7 rounded bg-stone-100 dark:bg-[#252320]" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-7 gap-1 text-center text-xs">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div key={d} className="font-medium text-stone-500 dark:text-stone-400 py-1">
+        <div className="grid grid-cols-7 gap-y-0.5 gap-x-0.5 text-center text-xs">
+          {DAYS_OF_WEEK.map((d, i) => (
+            <div key={i} className="font-medium text-stone-400 dark:text-[#7e7b72] py-1 text-[10px] uppercase tracking-wide">
               {d}
             </div>
           ))}
@@ -68,24 +82,29 @@ export function DevotionCalendar({ timezone, year, month, onDateClick, filterFro
               (filterFrom && dateStr >= filterFrom && !filterTo) ||
               (filterTo && dateStr <= filterTo && !filterFrom) ||
               (filterFrom && filterTo && dateStr >= filterFrom && dateStr <= filterTo);
-            const baseClass = `py-2 rounded ${hasDevotion ? "bg-amber-500/20 dark:bg-amber-400/20 text-amber-800 dark:text-amber-200 font-medium" : "text-stone-600 dark:text-stone-400"} ${inFilterRange ? "ring-2 ring-blue-500/70 dark:ring-blue-400/70" : ""}`;
-            const clickableClass = onDateClick ? " cursor-pointer hover:ring-2 hover:ring-amber-500/50 dark:hover:ring-amber-400/50" : "";
-            const content = <>{d}</>;
+            const baseClass = [
+              "py-1.5 rounded-md transition-colors select-none",
+              hasDevotion
+                ? "bg-amber-400/20 text-amber-800 dark:text-amber-200 font-semibold"
+                : "text-stone-600 dark:text-[#7e7b72]",
+              inFilterRange ? "ring-1 ring-inset ring-blue-400/60 dark:ring-blue-400/50" : "",
+              onDateClick ? "cursor-pointer hover:bg-stone-100 dark:hover:bg-zinc-700/50" : "",
+            ].join(" ");
             if (onDateClick) {
               return (
                 <button
                   key={d}
                   type="button"
                   onClick={() => onDateClick(dateStr)}
-                  className={baseClass + clickableClass}
+                  className={baseClass}
                 >
-                  {content}
+                  {d}
                 </button>
               );
             }
             return (
               <div key={d} className={baseClass}>
-                {content}
+                {d}
               </div>
             );
           })}

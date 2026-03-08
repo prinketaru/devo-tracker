@@ -1,3 +1,5 @@
+import { Card, CardContent } from "@/components/ui/card";
+
 export function Features() {
   const features = [
     {
@@ -60,30 +62,32 @@ export function Features() {
     <section id="features" className="scroll-mt-20">
       <div className="max-w-5xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 dark:text-stone-50 mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 dark:text-[#d6d3c8] mb-4">
             Everything you need to grow
           </h2>
-          <p className="text-lg text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
+          <p className="text-lg text-stone-600 dark:text-[#b8b5ac] max-w-2xl mx-auto">
             Simple, focused tools designed around your daily devotion practice.
           </p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <article
+            <Card
               key={index}
-              className="group rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/50 p-6 shadow-sm hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800/50 transition-all duration-200"
+              className="group border-stone-200 dark:border-[#2a2720] bg-white/60 dark:bg-[#171510]/50 shadow-sm hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800/50 transition-all duration-200"
             >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 mb-4 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/50 transition-colors">
-                {feature.icon}
-              </div>
-              <h3 className="text-lg font-semibold text-stone-900 dark:text-stone-50 mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-stone-600 dark:text-stone-300 text-sm leading-relaxed">
-                {feature.description}
-              </p>
-            </article>
+              <CardContent className="p-6">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 mb-4 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/50 transition-colors">
+                  {feature.icon}
+                </div>
+                <h3 className="text-lg font-semibold text-stone-900 dark:text-[#d6d3c8] mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-stone-600 dark:text-[#b8b5ac] text-sm leading-relaxed">
+                  {feature.description}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>

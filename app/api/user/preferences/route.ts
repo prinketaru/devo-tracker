@@ -19,7 +19,19 @@ export async function GET() {
   const timezone = doc?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const defaultTemplateMarkdown = doc?.defaultTemplateMarkdown ?? DEFAULT_DEVOTION_TEMPLATE;
   const reminders = Array.isArray(doc?.reminders) ? doc.reminders : [];
-  const profileImageUrl = typeof doc?.profileImageUrl === "string" ? doc.profileImageUrl : undefined;
+
+  // If profileImageUrl has never been set (null/undefined), fall back to the
+  // OAuth provider image stored by Better Auth in the `user` collection.
+  let profileImageUrl: string | undefined;
+  if (typeof doc?.profileImageUrl === "string") {
+    // Explicit value (could be "" meaning user cleared it, or a real URL/data URL)
+    profileImageUrl = doc.profileImageUrl || undefined;
+  } else {
+    // Never set — try provider image
+    const userDoc = await db.collection("user").findOne({ id: session.user.id });
+    profileImageUrl = typeof userDoc?.image === "string" && userDoc.image ? userDoc.image : undefined;
+  }
+
   const reminderEmails = doc?.reminderEmails !== false;
   const weeklyDigest = doc?.weeklyDigest !== false;
   const gracePeriodWarnings = doc?.gracePeriodWarnings !== false;

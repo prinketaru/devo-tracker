@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import type { MDXEditorMethods } from "@mdxeditor/editor";
+import type { ProseKitEditorHandle } from "./ProseKitEditor";
+import { Button } from "@/components/ui/button";
 
 const ForwardRefEditor = dynamic(
   () =>
@@ -14,10 +15,12 @@ type DefaultTemplateEditorSectionProps = {
   initialMarkdown: string;
 };
 
+import { FileText } from "lucide-react";
+
 export function DefaultTemplateEditorSection({
   initialMarkdown,
 }: DefaultTemplateEditorSectionProps) {
-  const editorRef = useRef<MDXEditorMethods>(null);
+  const editorRef = useRef<ProseKitEditorHandle>(null);
   const [saveMessage, setSaveMessage] = useState<"success" | "error" | null>(null);
 
   const handleSave = async () => {
@@ -39,40 +42,44 @@ export function DefaultTemplateEditorSection({
   };
 
   return (
-    <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
-        Default devotion template
-      </h2>
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
-        This template is used when you start a new devotion. Edit it below and
-        save.
-      </p>
-      <div className="mt-4 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden">
-        <ForwardRefEditor
-          ref={editorRef}
-          markdown={initialMarkdown}
-          className="devotion-editor min-h-[280px] rounded-xl text-stone-900 dark:text-stone-100 font-sans prose prose-stone dark:prose-invert max-w-none leading-snug px-4 py-3"
-        />
+    <div className="p-4 px-6">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="h-10 w-10 text-amber-600 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center shrink-0">
+          <FileText className="h-5 w-5" />
+        </div>
+        <div className="space-y-0.5">
+          <h4 className="text-sm font-semibold text-stone-900 dark:text-[#EDE9E0]">Default Devotion Template</h4>
+          <p className="text-xs text-stone-500 dark:text-[#8A8070]">This template is used when you start a new devotion</p>
+        </div>
       </div>
-      <div className="mt-3 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={handleSave}
-          className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors cursor-pointer"
-        >
-          Save as default template
-        </button>
-        {saveMessage === "success" && (
-          <span className="text-sm text-green-600 dark:text-green-400">
-            Template saved.
-          </span>
-        )}
-        {saveMessage === "error" && (
-          <span className="text-sm text-red-600 dark:text-red-400">
-            Failed to save. Try again.
-          </span>
-        )}
+      <div className="space-y-4">
+        <div className="rounded-xl border border-stone-200 dark:border-[#38332a] bg-stone-50 dark:bg-[#23201a] overflow-hidden">
+          <ForwardRefEditor
+            ref={editorRef}
+            markdown={initialMarkdown}
+            className="devotion-editor min-h-[280px] rounded-xl text-stone-900 dark:text-[#d6d3c8] font-sans prose prose-stone dark:prose-invert max-w-none leading-snug px-4 py-3"
+          />
+        </div>
+        <div className="flex items-center py-2 gap-3">
+          <Button
+            type="button"
+            onClick={handleSave}
+            className="bg-[#f0a531] hover:bg-[#c0831a] text-stone-900"
+          >
+            Save template
+          </Button>
+          {saveMessage === "success" && (
+            <span className="text-sm text-green-600 dark:text-green-400">
+              Template saved.
+            </span>
+          )}
+          {saveMessage === "error" && (
+            <span className="text-sm text-red-600 dark:text-red-400">
+              Failed to save. Try again.
+            </span>
+          )}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }

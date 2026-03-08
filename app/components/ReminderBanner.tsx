@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 export function ReminderBanner() {
   const [isDismissed, setIsDismissed] = useState(false);
@@ -32,10 +34,10 @@ export function ReminderBanner() {
         className="flex-1 block hover:opacity-90 transition-opacity"
       >
         <div>
-          <h2 className="text-base font-semibold text-stone-900 dark:text-stone-100">
+          <h2 className="text-base font-semibold text-stone-900 dark:text-[#d6d3c8]">
             Set up a devotion reminder
           </h2>
-          <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
+          <p className="mt-1 text-sm text-stone-600 dark:text-[#b8b5ac]">
             Get a notification at the times you choose so you never miss a devotion.
           </p>
         </div>
@@ -47,15 +49,16 @@ export function ReminderBanner() {
         >
           Add reminder →
         </Link>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleDismiss}
-          className="ml-2 rounded-md p-1.5 text-stone-500 dark:text-stone-400 hover:bg-amber-200/50 dark:hover:bg-amber-950/50 transition-colors"
+          className="h-8 w-8 text-stone-500 dark:text-[#7e7b72] hover:bg-amber-200/50 dark:hover:bg-amber-950/50"
           title="Dismiss this banner"
           aria-label="Dismiss reminder banner"
         >
-          <span className="text-lg">×</span>
-        </button>
+          <X className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

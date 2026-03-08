@@ -141,7 +141,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={otpLoading}
-                  className="w-full rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-md bg-[#f0a531] px-4 py-2 text-sm font-medium text-stone-900 hover:bg-[#c0831a] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {otpLoading ? "Sending code..." : "Send sign-in code"}
                 </button>
@@ -178,7 +178,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={otpLoading || otpCode.length !== 6}
-                    className="flex-1 rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex-1 rounded-md bg-[#f0a531] px-4 py-2 text-sm font-medium text-stone-900 hover:bg-[#c0831a] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {otpLoading ? "Signing in..." : "Sign in"}
                   </button>

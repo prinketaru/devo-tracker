@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FiBook, FiCalendar, FiBell, FiTrendingUp, FiUsers, FiCheckCircle, FiSettings } from "react-icons/fi";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 type OnboardingModalProps = {
   isOpen: boolean;
@@ -25,7 +31,7 @@ const steps: Step[] = [
     description: "Your daily companion for spiritual growth and consistency",
     icon: <FiBook className="w-12 h-12" />,
     features: [
-      "Start from the Dashboard—your home base for today’s devotion",
+      "Start from the Dashboard—your home base for today's devotion",
       "Use the top buttons to log or start a devotion right away",
       "Check your streak and Verse of the Day in one place",
     ],
@@ -33,7 +39,7 @@ const steps: Step[] = [
       {
         label: "Dashboard",
         href: "/dashboard",
-        description: "Today’s actions, streak, and recent devotions.",
+        description: "Today's actions, streak, and recent devotions.",
       },
     ],
   },
@@ -50,7 +56,7 @@ const steps: Step[] = [
     ],
     locations: [
       {
-        label: "Start today’s devotion",
+        label: "Start today's devotion",
         href: "/devotions/new",
         description: "Open the editor for a new devotion.",
       },
@@ -195,32 +201,21 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
     handleComplete();
   };
 
-  if (!isOpen) return null;
-
   const step = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
+  const progressValue = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="onboarding-title"
-    >
-      <div className="relative w-full max-w-2xl rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-2xl overflow-hidden">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open && isLastStep) handleComplete(); }}>
+      <DialogContent className="max-w-2xl p-0 overflow-hidden gap-0 sm:max-h-[90dvh]" aria-labelledby="onboarding-title">
         {/* Progress bar */}
-        <div className="h-1 bg-stone-200 dark:bg-zinc-800">
-          <div
-            className="h-full bg-amber-500 transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-          />
-        </div>
+        <Progress value={progressValue} className="h-1 rounded-none" />
 
         {/* Content */}
-        <div className="p-8">
-          <div className="flex items-start gap-6">
+        <div className="p-5 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
             {/* Icon */}
-            <div className="shrink-0 rounded-xl bg-amber-100 dark:bg-amber-900/30 p-4 text-amber-600 dark:text-amber-400">
+            <div className="shrink-0 self-start rounded-xl bg-amber-100 dark:bg-amber-900/30 p-3 sm:p-4 text-amber-600 dark:text-amber-400">
               {step.icon}
             </div>
 
@@ -228,11 +223,11 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
             <div className="flex-1">
               <h2
                 id="onboarding-title"
-                className="text-2xl font-semibold text-stone-900 dark:text-stone-50 mb-2"
+                className="text-xl sm:text-2xl font-semibold text-stone-900 dark:text-[#d6d3c8] mb-2"
               >
                 {step.title}
               </h2>
-              <p className="text-stone-600 dark:text-stone-300 mb-6">
+              <p className="text-stone-600 dark:text-[#b8b5ac] mb-6">
                 {step.description}
               </p>
 
@@ -246,8 +241,8 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
               </ul>
 
               {step.locations && step.locations.length > 0 ? (
-                <div className="mt-6 rounded-xl border border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/60 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
+                <div className="mt-6 rounded-xl border border-stone-200 dark:border-[#2a2720] bg-stone-50/70 dark:bg-[#171510]/60 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-[#7e7b72]">
                     Where to find this
                   </p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -255,7 +250,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                       <Link
                         key={location.href}
                         href={location.href}
-                        className="group rounded-lg border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-stone-700 dark:text-stone-200 hover:border-amber-300 dark:hover:border-amber-500/60 hover:text-stone-900 dark:hover:text-stone-50 transition-colors"
+                        className="group rounded-lg border border-stone-200 dark:border-[#2a2720] bg-white dark:bg-[#1e1c18] px-3 py-2 text-sm text-stone-700 dark:text-stone-200 hover:border-amber-300 dark:hover:border-amber-500/60 hover:text-stone-900 dark:hover:text-stone-50 transition-colors"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-medium">{location.label}</span>
@@ -264,7 +259,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                           </span>
                         </div>
                         {location.description ? (
-                          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                          <p className="mt-1 text-xs text-stone-500 dark:text-[#7e7b72]">
                             {location.description}
                           </p>
                         ) : null}
@@ -282,13 +277,12 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
               <button
                 key={index}
                 onClick={() => setCurrentStep(index)}
-                className={`h-2 rounded-full transition-all ${
-                  index === currentStep
+                className={`h-2 rounded-full transition-all ${index === currentStep
                     ? "w-8 bg-amber-500"
                     : index < currentStep
-                    ? "w-2 bg-amber-300 dark:bg-amber-600"
-                    : "w-2 bg-stone-300 dark:bg-zinc-700"
-                }`}
+                      ? "w-2 bg-amber-300 dark:bg-[#f0a531]"
+                      : "w-2 bg-stone-300 dark:bg-zinc-700"
+                  }`}
                 aria-label={`Go to step ${index + 1}`}
               />
             ))}
@@ -296,35 +290,36 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-4 px-8 py-4 bg-stone-50 dark:bg-zinc-800/50 border-t border-stone-200 dark:border-zinc-800">
-          <button
+        <div className="flex items-center justify-between gap-4 px-8 py-4 bg-stone-50 dark:bg-[#1e1c18]/50 border-t border-stone-200 dark:border-[#2a2720]">
+          <Button
+            variant="ghost"
             onClick={handleSkip}
-            className="text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
             disabled={isCompleting}
+            className="text-stone-600 dark:text-[#7e7b72]"
           >
             Skip tour
-          </button>
+          </Button>
 
           <div className="flex items-center gap-3">
             {currentStep > 0 && (
-              <button
+              <Button
+                variant="ghost"
                 onClick={handlePrevious}
-                className="px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-zinc-700 rounded-lg transition-colors"
                 disabled={isCompleting}
               >
                 Previous
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               onClick={handleNext}
-              className="px-6 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-25"
               disabled={isCompleting}
+              className="bg-[#f0a531] hover:bg-[#c0831a] text-stone-900 min-w-[6rem]"
             >
               {isCompleting ? "Finishing..." : isLastStep ? "Get Started" : "Next"}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

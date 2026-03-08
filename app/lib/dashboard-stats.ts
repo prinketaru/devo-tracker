@@ -1,5 +1,7 @@
 import { getDb } from "@/app/lib/mongodb";
 
+const PRAYER_REQUESTS_COLLECTION = "prayer_requests";
+
 const DEVOTIONS_COLLECTION = "devotions";
 const PREFERENCES_COLLECTION = "user_preferences";
 
@@ -24,6 +26,10 @@ export type DashboardData = {
     graceStreakDays?: number;
     graceTimeLeft?: string;
   };
+  totalDevotions: number;
+  activePrayers: number;
+  answeredPrayers: number;
+  thisWeekCount: number;
   todayDevotionId?: string;
 };
 
@@ -296,6 +302,13 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
   });
   const todayDevotionId = todayDevotion ? todayDevotion._id.toString() : undefined;
 
+  // Count active and answered prayers
+  const prayerColl = db.collection(PRAYER_REQUESTS_COLLECTION);
+  const [activePrayers, answeredPrayers] = await Promise.all([
+    prayerColl.countDocuments({ userId, status: "active" }),
+    prayerColl.countDocuments({ userId, status: "answered" }),
+  ]);
+
   return {
     devotions,
     weeklyStats,
@@ -307,6 +320,10 @@ export async function getDashboardData(userId: string, timezone?: string): Promi
       graceStreakDays,
       graceTimeLeft: onGracePeriod ? formatDuration(graceRemainingMs) : undefined,
     },
+    totalDevotions: devotionDocs.length,
+    activePrayers,
+    answeredPrayers,
+    thisWeekCount,
     todayDevotionId,
   };
 }

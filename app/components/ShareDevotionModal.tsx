@@ -1,6 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type ShareDevotionModalProps = {
   devotionId: string;
@@ -63,36 +72,29 @@ export function ShareDevotionModal({ devotionId, isOpen, onClose }: ShareDevotio
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="share-devotion-title"
-    >
-      <div className="w-full max-w-md rounded-2xl border border-stone-200 dark:border-zinc-700 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl p-6 shadow-xl">
-        <h2 id="share-devotion-title" className="text-lg font-semibold text-stone-900 dark:text-stone-100">
-          Share devotion
-        </h2>
-        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-          Anyone with this link can view your devotion (read-only).
-        </p>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Share devotion</DialogTitle>
+          <DialogDescription>
+            Anyone with this link can view your devotion (read-only).
+          </DialogDescription>
+        </DialogHeader>
 
         {error && (
-          <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         )}
 
-        <div className="mt-6 flex gap-2">
-          <input
+        <div className="flex gap-2">
+          <Input
             type="text"
             readOnly
             value={shareUrl ?? (loading ? "Loading…" : "")}
             placeholder={loading ? "" : "Click to create link"}
-            className="flex-1 rounded-md border border-stone-200 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 truncate"
+            className="flex-1 truncate"
           />
-          <button
+          <Button
             type="button"
             onClick={async () => {
               if (shareUrl) handleCopy();
@@ -102,13 +104,14 @@ export function ShareDevotionModal({ devotionId, isOpen, onClose }: ShareDevotio
               }
             }}
             disabled={loading}
-            className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            className="bg-[#f0a531] hover:bg-[#c0831a] text-stone-900 shrink-0"
           >
             {copied ? "Copied!" : shareUrl ? "Copy" : loading ? "..." : "Create link"}
-          </button>
+          </Button>
           {shareUrl && (
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={async () => {
                 if (deleteLoading) return;
                 setDeleteLoading(true);
@@ -125,23 +128,19 @@ export function ShareDevotionModal({ devotionId, isOpen, onClose }: ShareDevotio
                 }
               }}
               disabled={deleteLoading}
-              className="rounded-md border border-red-200 dark:border-red-800 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-50 shrink-0"
+              className="border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0"
             >
               {deleteLoading ? "Deleting…" : "Delete"}
-            </button>
+            </Button>
           )}
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-stone-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
-          >
+        <div className="flex justify-end">
+          <Button type="button" variant="outline" onClick={onClose}>
             Close
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

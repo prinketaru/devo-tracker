@@ -30,6 +30,9 @@ function applyTheme(theme: Theme) {
         ? false
         : window.matchMedia("(prefers-color-scheme: dark)").matches;
   document.documentElement.classList.toggle("dark", isDark);
+  // Also toggle on body so Radix UI portal elements (direct body children)
+  // inherit the dark variant from their immediate parent.
+  document.body.classList.toggle("dark", isDark);
 }
 
 type ThemeContextValue = {

@@ -2,12 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { forwardRef } from "react";
-import type { MDXEditorMethods, MDXEditorProps } from "@mdxeditor/editor";
+import type { ProseKitEditorHandle } from "./ProseKitEditor";
 
-const Editor = dynamic(() => import("./InitializedMDXEditor"), { ssr: false });
+const Editor = dynamic(() => import("./ProseKitEditor").then(mod => mod.ProseKitEditor), { ssr: false });
 
-export const ForwardRefEditor = forwardRef<MDXEditorMethods, MDXEditorProps>(
-  (props, ref) => <Editor {...props} editorRef={ref} />,
+export const ForwardRefEditor = forwardRef<ProseKitEditorHandle, { markdown?: string; className?: string }>(
+  (props, ref) => <Editor {...props} ref={ref} />,
 );
 
 ForwardRefEditor.displayName = "ForwardRefEditor";

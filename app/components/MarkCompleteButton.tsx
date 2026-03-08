@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MarkCompleteModal } from "./MarkCompleteModal";
+import { Button } from "@/components/ui/button";
 
 type MarkCompleteButtonProps = {
   timezone: string;
@@ -40,13 +41,14 @@ export function MarkCompleteButton({ timezone, todayDevotionId }: MarkCompleteBu
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        variant="outline"
         onClick={handleOpenModal}
-        className="inline-flex items-center justify-center rounded-md border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/30 px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors"
+        className="border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/50"
       >
         {todayDevotionId ? "Edit today's devotion" : "Quick log"}
-      </button>
+      </Button>
 
       <MarkCompleteModal
         isOpen={isModalOpen}

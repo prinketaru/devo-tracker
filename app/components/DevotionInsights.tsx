@@ -18,11 +18,7 @@ export function DevotionInsights() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data: Insights | null) => {
         if (!data) return setInsights(null);
-        const normalized = {
-          ...data,
-          topBooks: Array.isArray(data.topBooks) ? data.topBooks : [],
-        };
-        setInsights(normalized);
+        setInsights({ ...data, topBooks: Array.isArray(data.topBooks) ? data.topBooks : [] });
       })
       .catch(() => setInsights(null))
       .finally(() => setLoading(false));
@@ -30,14 +26,11 @@ export function DevotionInsights() {
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm animate-pulse">
-        <div className="h-5 w-40 rounded bg-stone-200 dark:bg-zinc-800" />
-        <div className="mt-4 space-y-3">
-          <div className="h-10 rounded-lg bg-stone-200 dark:bg-zinc-800" />
-          <div className="h-10 rounded-lg bg-stone-200 dark:bg-zinc-800" />
-          <div className="h-10 rounded-lg bg-stone-200 dark:bg-zinc-800" />
-        </div>
-      </section>
+      <div className="space-y-2 animate-pulse">
+        <div className="h-4 w-32 rounded bg-stone-200 dark:bg-[#2a2720]" />
+        <div className="h-9 rounded-xl bg-stone-200 dark:bg-[#2a2720]" />
+        <div className="h-9 rounded-xl bg-stone-200 dark:bg-[#2a2720]" />
+      </div>
     );
   }
 
@@ -50,41 +43,42 @@ export function DevotionInsights() {
   if (insights.totalMinutes != null && insights.totalMinutes > 0) {
     const hours = Math.floor(insights.totalMinutes / 60);
     const mins = insights.totalMinutes % 60;
-    const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    stats.push({ label: "Total time in devotions", value: timeStr });
+    stats.push({ label: "Total time", value: hours > 0 ? `${hours}h ${mins}m` : `${mins}m` });
   }
 
+  if (stats.length === 0 && (!insights.topBooks || insights.topBooks.length === 0)) return null;
+
   return (
-    <section className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
-        Devotion insights
-      </h2>
-      <div className="mt-4 space-y-3">
-        {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="flex items-center justify-between rounded-lg border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm"
-          >
-            <span className="text-stone-600 dark:text-stone-300">{stat.label}</span>
-            <span className="font-semibold text-stone-900 dark:text-stone-100">{stat.value}</span>
-          </div>
-        ))}
-        {insights.topBooks && insights.topBooks.length > 0 && (
-          <div className="pt-2 border-t border-stone-200 dark:border-zinc-800">
-            <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
-              Top books
-            </p>
-            <ul className="space-y-1">
-              {insights.topBooks.map((p) => (
-                <li key={p.book} className="flex justify-between text-sm">
-                  <span className="text-stone-700 dark:text-stone-200 truncate max-w-[180px]">{p.book}</span>
-                  <span className="text-stone-500 dark:text-stone-400 shrink-0">{p.count}x</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    </section>
+    <div className="space-y-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-[#7e7b72]">
+        Insights
+      </p>
+
+      {stats.map((stat) => (
+        <div
+          key={stat.label}
+          className="flex items-center justify-between rounded-xl border border-stone-200 dark:border-[#2a2720] bg-stone-50 dark:bg-[#171510] px-3 py-2.5 text-sm"
+        >
+          <span className="text-stone-600 dark:text-[#b8b5ac]">{stat.label}</span>
+          <span className="font-semibold text-stone-900 dark:text-[#d6d3c8]">{stat.value}</span>
+        </div>
+      ))}
+
+      {insights.topBooks && insights.topBooks.length > 0 && (
+        <div className="rounded-xl border border-stone-200 dark:border-[#2a2720] bg-stone-50 dark:bg-[#171510] px-3 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-500 dark:text-[#7e7b72] mb-2">
+            Top books
+          </p>
+          <ul className="space-y-1.5">
+            {insights.topBooks.map((p) => (
+              <li key={p.book} className="flex justify-between text-sm">
+                <span className="text-stone-700 dark:text-[#c8c4ba] truncate max-w-[180px]">{p.book}</span>
+                <span className="text-stone-400 dark:text-[#7e7b72] shrink-0">{p.count}×</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }

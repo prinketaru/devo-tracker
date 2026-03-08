@@ -1,26 +1,220 @@
 @config "../tailwind.config.ts";
+
+@plugin "tailwindcss-animate";
 @import "tailwindcss";
 
-:root {
-  --background: #fbf7ef;
-  --foreground: #1f1a12;
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
-  --font-serif: var(--font-playfair);
+  --font-serif: var(--font-lora);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #F9F8F5;
+  --foreground: #1A1710;
+  --card: #FFFFFF;
+  --card-foreground: #1A1710;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1710;
+  --primary: #1A1710;
+  --primary-foreground: #F9F8F5;
+  --secondary: #F0EDE6;
+  --secondary-foreground: #1A1710;
+  --muted: #F0EDE6;
+  --muted-foreground: #7A7166;
+  --accent: #F0EDE6;
+  --accent-foreground: #1A1710;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #E3DED4;
+  --input: #E3DED4;
+  --ring: #B89A6A;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: #100f0c;
+  --sidebar-foreground: #d6d3c8;
+  --sidebar-primary: #f0a531;
+  --sidebar-primary-foreground: #1A1710;
+  --sidebar-accent: #1e1c18;
+  --sidebar-accent-foreground: #d6d3c8;
+  --sidebar-border: #2a2720;
+  --sidebar-ring: #f0a531;
 }
 
 .dark {
-  --background: #15130f;
-  --foreground: #f3ede3;
+  --background: #171510;
+  --foreground: #EDE9E0;
+  --card: #1F1C16;
+  --card-foreground: #EDE9E0;
+  --popover: #1F1C16;
+  --popover-foreground: #EDE9E0;
+  --primary: #EDE9E0;
+  --primary-foreground: #1A1710;
+  --secondary: #252118;
+  --secondary-foreground: #EDE9E0;
+  --muted: #252118;
+  --muted-foreground: #8A8070;
+  --accent: #252118;
+  --accent-foreground: #EDE9E0;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: #2E2B23;
+  --input: #2E2B23;
+  --ring: #8A6F3F;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #100f0c;
+  --sidebar-foreground: #d6d3c8;
+  --sidebar-primary: #f0a531;
+  --sidebar-primary-foreground: #1A1710;
+  --sidebar-accent: #1e1c18;
+  --sidebar-accent-foreground: #d6d3c8;
+  --sidebar-border: #2a2720;
+  --sidebar-ring: #f0a531;
+}
+
+/* Streak card geometric shape animations */
+@keyframes streak-shape-drift {
+  0% {
+    transform: rotate(12deg) scale(1) translate(0px, 0px);
+  }
+
+  33% {
+    transform: rotate(22deg) scale(1.06) translate(-3px, 2px);
+  }
+
+  66% {
+    transform: rotate(6deg) scale(0.97) translate(2px, -2px);
+  }
+
+  100% {
+    transform: rotate(12deg) scale(1) translate(0px, 0px);
+  }
+}
+
+@keyframes streak-shape-pulse {
+  0% {
+    transform: rotate(45deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(45deg) scale(1.15);
+  }
+
+  100% {
+    transform: rotate(45deg) scale(1);
+  }
+}
+
+.animate-streak-drift {
+  animation: streak-shape-drift 8s ease-in-out infinite;
+}
+
+.animate-streak-pulse {
+  animation: streak-shape-pulse 4s ease-in-out infinite;
+}
+
+/* ── Scrollbars ── */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #D4CEBF #F0EDE6;
+}
+
+.dark * {
+  scrollbar-color: #3A3629 #1F1C16;
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F0EDE6;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4CEBF;
+  border-radius: 999px;
+  border: 1px solid #F0EDE6;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #f0a531;
+}
+
+::-webkit-scrollbar-corner {
+  background: #F0EDE6;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1F1C16;
+  border-radius: 999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3A3629;
+  border-radius: 999px;
+  border: 1px solid #1F1C16;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #f0a531;
+}
+
+.dark ::-webkit-scrollbar-corner {
+  background: #1F1C16;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
 }
 
@@ -81,11 +275,27 @@ input:disabled {
 }
 
 .dark *::-webkit-scrollbar-thumb:hover {
-  background: #f59e0b;
+  background: #f0a531;
 }
 
 .dark *::-webkit-scrollbar-corner {
   background: #27272a;
+}
+
+/* Global button press animation — applies to ALL button elements site-wide */
+button {
+  transition-property: color, background-color, border-color, transform, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 100ms;
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+/* Anchor-buttons (used via asChild / next/link) */
+a[role="button"]:not([aria-disabled="true"]):active {
+  transform: translateY(1px);
 }
 
 /* Reminder time dropdown – theme-matched select */
@@ -119,9 +329,113 @@ input:disabled {
 }
 
 .dark .reminder-time-select:focus {
-  border-color: #f59e0b;
+  border-color: #f0a531;
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
 }
+
+/* ESV Bible Text Formatting */
+.esv-passage {
+  font-family: var(--font-lora), "Lora", "Georgia", "Times New Roman", serif;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #3f3f46;
+  /* text-stone-700 */
+}
+
+.dark .esv-passage {
+  color: #e5e5e5;
+  /* text-neutral-200 */
+}
+
+.esv-passage h2,
+.esv-passage h3,
+.esv-passage h4 {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: #1c1917;
+  /* text-stone-900 */
+  font-size: 1.1rem;
+}
+
+.dark .esv-passage h2,
+.dark .esv-passage h3,
+.dark .esv-passage h4 {
+  color: #d6d3c8;
+}
+
+.esv-passage .chapter-num {
+  font-size: 2em;
+  font-weight: 700;
+  float: left;
+  margin-top: 0.1em;
+  margin-right: 0.15em;
+  margin-bottom: -0.2em;
+  line-height: 1;
+  color: #b45309;
+  /* amber-700 */
+}
+
+.dark .esv-passage .chapter-num {
+  color: #fcd34d;
+  /* amber-300 */
+}
+
+.esv-passage .verse-num {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.65em;
+  font-weight: 600;
+  vertical-align: super;
+  color: #a8a29e;
+  /* stone-400 */
+  margin-right: 0.2rem;
+  margin-left: 0.1rem;
+}
+
+.dark .esv-passage .verse-num {
+  color: #78716c;
+  /* stone-500 */
+}
+
+/* Poetic formatting returned by ESV API */
+.esv-passage .block-p {
+  padding-left: 1.5rem;
+  text-indent: -1.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.esv-passage .line-group {
+  margin-bottom: 1rem;
+}
+
+.esv-passage .line {
+  display: block;
+  margin-left: 1.5rem;
+  text-indent: -1.5rem;
+}
+
+.esv-passage .woc {
+  color: #991b1b;
+  /* red-800 for words of Christ */
+}
+
+.dark .esv-passage .woc {
+  color: #f87171;
+  /* red-400 for words of Christ */
+}
+
+.esv-passage .footnote {
+  font-size: 0.75em;
+  vertical-align: super;
+  color: #78716c;
+}
+
+.dark .esv-passage .footnote {
+  color: #a8a29e;
+}
+
 
 /* Safe area for notched devices (e.g. iPhone) */
 .safe-area-x {
@@ -139,7 +453,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-playfair), "Playfair Display", "Times New Roman", serif;
+  font-family: var(--font-lora), "Lora", "Georgia", serif;
 }
 
 /* Devotion notes: use Inter for headings (match body text) */
@@ -160,281 +474,122 @@ h6 {
   min-height: 0;
 }
 
-/* ===== TOOLBAR STYLING ===== */
+/* ===== PROSE KIT EDITOR STYLING ===== */
 
-.devotion-editor .mdxeditor-toolbar {
-  flex: 0 0 auto;
-  flex-wrap: wrap;
-  gap: 2px;
-  padding: 8px;
-  border-bottom: 1px solid #e7e1d7;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1f1a12;
-}
-
-.dark .devotion-editor .mdxeditor-toolbar {
-  border-bottom: 1px solid #3b352c;
-  background: #18181b;
-  color: #f9fafb;
-}
-
-/* Toolbar buttons */
-.devotion-editor .mdxeditor-toolbar button,
-.devotion-editor .mdxeditor-toolbar [role="button"] {
-  font-weight: 400;
-  border-radius: 6px;
-  padding: 6px 10px;
-  transition: all 0.15s ease;
-  border: 1px solid transparent;
-}
-
-.devotion-editor .mdxeditor-toolbar button:hover,
-.devotion-editor .mdxeditor-toolbar [role="button"]:hover {
-  background: rgba(180, 83, 9, 0.1);
-  border-color: rgba(180, 83, 9, 0.2);
-}
-
-.devotion-editor .mdxeditor-toolbar button[data-active="true"],
-.devotion-editor .mdxeditor-toolbar button[aria-pressed="true"] {
-  background: rgba(180, 83, 9, 0.15);
-  border-color: rgba(180, 83, 9, 0.3);
-  font-weight: 500;
-}
-
-.dark .devotion-editor .mdxeditor-toolbar button:hover,
-.dark .devotion-editor .mdxeditor-toolbar [role="button"]:hover {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.2);
-}
-
-.dark .devotion-editor .mdxeditor-toolbar button[data-active="true"],
-.dark .devotion-editor .mdxeditor-toolbar button[aria-pressed="true"] {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.3);
-}
-
-/* Toolbar separators */
-.devotion-editor .mdxeditor-toolbar [data-toolbar-item-name="separator"] {
-  width: 1px;
-  height: 24px;
-  background: #d6d3d1;
-  margin: 0 2px;
-}
-
-.dark .devotion-editor .mdxeditor-toolbar [data-toolbar-item-name="separator"] {
-  background: #52525b;
-}
-
-/* Compact scrolling toolbar on mobile */
-@media (max-width: 640px) {
-  .devotion-editor .mdxeditor-toolbar {
-    padding: 4px 8px;
-    gap: 4px;
-    flex-wrap: nowrap;
-    /* Force single line */
-    overflow-x: auto;
-    /* Scroll horizontally */
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    /* Smooth scrolling */
-    max-width: 100%;
-  }
-
-  /* Hide scrollbar but keep functionality */
-  .devotion-editor .mdxeditor-toolbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .devotion-editor .mdxeditor-toolbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .devotion-editor .mdxeditor-toolbar button,
-  .devotion-editor .mdxeditor-toolbar [role="button"] {
-    min-height: 32px;
-    min-width: 32px;
-    padding: 4px;
-    flex-shrink: 0;
-    /* Don't shrink buttons */
-  }
-
-  .devotion-editor .mdxeditor-toolbar [data-toolbar-item-name="separator"] {
-    flex-shrink: 0;
-  }
-}
-
-.devotion-editor .mdxeditor-toolbar button,
-.devotion-editor .mdxeditor-toolbar [role="button"],
-.devotion-editor .mdxeditor-toolbar svg,
-.devotion-editor .mdxeditor-toolbar svg * {
-  color: inherit !important;
-  fill: currentColor !important;
-  stroke: currentColor !important;
-}
-
-.dark .devotion-editor .mdxeditor-toolbar button,
-.dark .devotion-editor .mdxeditor-toolbar [role="button"],
-.dark .devotion-editor .mdxeditor-toolbar svg,
-.dark .devotion-editor .mdxeditor-toolbar svg * {
-  background: transparent;
-  color: #f9fafb !important;
-  fill: currentColor !important;
-  stroke: currentColor !important;
-}
-
-/* Toolbar select dropdowns */
-/* Toolbar select dropdowns */
-.devotion-editor .mdxeditor-select-trigger {
-  border-radius: 6px;
-  padding: 6px 10px;
-  border: 1px solid #e7e5e4;
-  /* stone-200 */
-  background: white;
-  transition: all 0.15s ease;
-  color: #1f1a12;
-  font-size: 0.875rem;
-  /* text-sm */
-}
-
-.devotion-editor .mdxeditor-select-trigger:hover {
-  border-color: rgba(180, 83, 9, 0.3);
-  background: rgba(180, 83, 9, 0.05);
-}
-
-.dark .devotion-editor .mdxeditor-select-trigger {
-  border-color: #3f3f46;
-  /* zinc-700 */
-  background: #18181b;
-  /* zinc-900 */
-  color: #f9fafb;
-}
-
-.dark .devotion-editor .mdxeditor-select-trigger:hover {
-  border-color: rgba(245, 158, 11, 0.4);
-  background: rgba(245, 158, 11, 0.08);
-}
-
-.devotion-editor .mdxeditor-select-content {
-  background: white;
-  border: 1px solid #e7e5e4;
-  /* stone-200 */
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  /* shadow-lg */
-  padding: 4px;
-  color: #1f1a12;
-  z-index: 50;
-}
-
-.dark .devotion-editor .mdxeditor-select-content {
-  background: #18181b;
-  /* zinc-900 */
-  border-color: #3f3f46;
-  /* zinc-700 */
-  color: #f9fafb;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-}
-
-.devotion-editor .mdxeditor-select-content [data-highlighted],
-.devotion-editor .mdxeditor-select-content [data-state="checked"] {
-  background: #fafaf9;
-  /* stone-50 */
-  color: #1f1a12;
-  outline: none;
-}
-
-.dark .devotion-editor .mdxeditor-select-content [data-highlighted],
-.dark .devotion-editor .mdxeditor-select-content [data-state="checked"] {
-  background: #27272a;
-  /* zinc-800 */
-  color: #f9fafb;
-}
-
-/* Dropdown items */
-.devotion-editor .mdxeditor-select-item {
-  padding: 8px 12px;
-  /* standard padding */
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 0.875rem;
-  /* text-sm */
-}
-
-.dark .devotion-editor .mdxeditor-select-item {
-  color: #f9fafb;
-}
-
-
-/* ===== CONTENT EDITABLE AREA ===== */
-
-.devotion-editor .mdxeditor-root-contenteditable {
+.devotion-editor .ProseMirror {
   color: var(--foreground);
   font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
-  line-height: 1.6;
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
+  line-height: 1.7;
   font-size: 1rem;
+  flex: 1;
+  height: 100%;
   -webkit-overflow-scrolling: touch;
-  padding: 16px;
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.devotion-editor .mdxeditor-root-contenteditable h1,
-.devotion-editor .mdxeditor-root-contenteditable h2,
-.devotion-editor .mdxeditor-root-contenteditable h3,
-.devotion-editor .mdxeditor-root-contenteditable h4,
-.devotion-editor .mdxeditor-root-contenteditable h5,
-.devotion-editor .mdxeditor-root-contenteditable h6 {
+.devotion-editor .ProseMirror:focus {
+  outline: none;
+}
+
+/* Headings */
+.devotion-editor .ProseMirror h1,
+.devotion-editor .ProseMirror h2,
+.devotion-editor .ProseMirror h3,
+.devotion-editor .ProseMirror h4,
+.devotion-editor .ProseMirror h5,
+.devotion-editor .ProseMirror h6 {
   font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
+  font-weight: 600;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
-  font-weight: 600;
+  color: inherit;
 }
 
-.devotion-editor .mdxeditor-root-contenteditable h1 {
-  font-size: 2em;
+.devotion-editor .ProseMirror h1 {
+  font-size: 1.875em;
 }
 
-.devotion-editor .mdxeditor-root-contenteditable h2 {
+.devotion-editor .ProseMirror h2 {
   font-size: 1.5em;
 }
 
-.devotion-editor .mdxeditor-root-contenteditable h3 {
+.devotion-editor .ProseMirror h3 {
   font-size: 1.25em;
 }
 
-.devotion-editor .mdxeditor-root-contenteditable p,
-.devotion-editor .mdxeditor-root-contenteditable li,
-.devotion-editor .mdxeditor-root-contenteditable span,
-.devotion-editor .mdxeditor-root-contenteditable strong,
-.devotion-editor .mdxeditor-root-contenteditable em,
-.devotion-editor .mdxeditor-root-contenteditable a,
-.devotion-editor .mdxeditor-root-contenteditable code {
+/* Paragraphs */
+.devotion-editor .ProseMirror p {
+  margin: 0.5em 0;
   color: inherit;
 }
 
-.devotion-editor .mdxeditor-root-contenteditable * {
-  color: inherit;
+/* Inline marks */
+.devotion-editor .ProseMirror strong {
+  font-weight: 700;
 }
 
-.dark .devotion-editor {
-  color: var(--foreground);
+.devotion-editor .ProseMirror em {
+  font-style: italic;
 }
 
-.dark .devotion-editor .mdxeditor-root-contenteditable {
-  color: var(--foreground);
+.devotion-editor .ProseMirror u {
+  text-decoration: underline;
 }
 
-.dark .devotion-editor .mdxeditor-root-contenteditable * {
-  color: var(--foreground);
+.devotion-editor .ProseMirror s {
+  text-decoration: line-through;
 }
 
-/* ===== CODE BLOCKS ===== */
+/* Lists */
+.devotion-editor .ProseMirror ul,
+.devotion-editor .ProseMirror ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
 
-.devotion-editor .mdxeditor-root-contenteditable pre {
+.devotion-editor .ProseMirror li {
+  margin: 0.25em 0;
+}
+
+/* Blockquotes */
+.devotion-editor .ProseMirror blockquote {
+  border-left: 4px solid #b45309;
+  padding-left: 1em;
+  margin: 1em 0;
+  font-style: italic;
+  color: #78716c;
+}
+
+.dark .devotion-editor .ProseMirror blockquote {
+  border-left-color: #f0a531;
+  color: #a8a29e;
+}
+
+/* Horizontal rules */
+.devotion-editor .ProseMirror hr {
+  border: none;
+  border-top: 2px solid #e7e5e4;
+  margin: 2em 0;
+}
+
+.dark .devotion-editor .ProseMirror hr {
+  border-top-color: #3b352c;
+}
+
+/* Code */
+.devotion-editor .ProseMirror code {
+  background: #f5f5f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
+}
+
+.dark .devotion-editor .ProseMirror code {
+  background: #27272a;
+}
+
+.devotion-editor .ProseMirror pre {
   background: #f5f5f4;
   border: 1px solid #e7e5e4;
   border-radius: 8px;
@@ -445,278 +600,100 @@ h6 {
   font-size: 0.875em;
 }
 
-.dark .devotion-editor .mdxeditor-root-contenteditable pre {
+.dark .devotion-editor .ProseMirror pre {
   background: #1a1a1a;
   border-color: #3b352c;
 }
 
-.devotion-editor .mdxeditor-root-contenteditable code {
-  background: #f5f5f4;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.875em;
-}
-
-.dark .devotion-editor .mdxeditor-root-contenteditable code {
-  background: #27272a;
-}
-
-.devotion-editor .mdxeditor-root-contenteditable pre code {
+.devotion-editor .ProseMirror pre code {
   background: transparent;
   padding: 0;
-  border-radius: 0;
 }
 
-/* ===== TABLES ===== */
+/* Links */
+.devotion-editor .ProseMirror a {
+  color: #b45309;
+  text-decoration: underline;
+  text-decoration-color: rgba(180, 83, 9, 0.3);
+  transition: text-decoration-color 0.15s ease;
+}
 
-.devotion-editor .mdxeditor-root-contenteditable table {
+.devotion-editor .ProseMirror a:hover {
+  text-decoration-color: #b45309;
+}
+
+.dark .devotion-editor .ProseMirror a {
+  color: #f0a531;
+  text-decoration-color: rgba(245, 158, 11, 0.3);
+}
+
+.dark .devotion-editor .ProseMirror a:hover {
+  text-decoration-color: #f0a531;
+}
+
+/* Tables */
+.devotion-editor .ProseMirror table {
   border-collapse: collapse;
   width: 100%;
   margin: 1em 0;
-  overflow: hidden;
   border-radius: 8px;
   border: 1px solid #e7e5e4;
+  overflow: hidden;
 }
 
-.dark .devotion-editor .mdxeditor-root-contenteditable table {
+.dark .devotion-editor .ProseMirror table {
   border-color: #3b352c;
 }
 
-.devotion-editor .mdxeditor-root-contenteditable th,
-.devotion-editor .mdxeditor-root-contenteditable td {
+.devotion-editor .ProseMirror th,
+.devotion-editor .ProseMirror td {
   border: 1px solid #e7e5e4;
   padding: 8px 12px;
   text-align: left;
 }
 
-.dark .devotion-editor .mdxeditor-root-contenteditable th,
-.dark .devotion-editor .mdxeditor-root-contenteditable td {
+.dark .devotion-editor .ProseMirror th,
+.dark .devotion-editor .ProseMirror td {
   border-color: #3b352c;
 }
 
-.devotion-editor .mdxeditor-root-contenteditable th {
+.devotion-editor .ProseMirror th {
   background: #f5f5f4;
   font-weight: 600;
 }
 
-.dark .devotion-editor .mdxeditor-root-contenteditable th {
+.dark .devotion-editor .ProseMirror th {
   background: #27272a;
 }
 
-/* ===== LINKS ===== */
-
-.devotion-editor .mdxeditor-root-contenteditable a {
-  color: #b45309;
-  text-decoration: underline;
-  text-decoration-color: rgba(180, 83, 9, 0.3);
-  transition: all 0.15s ease;
-}
-
-.devotion-editor .mdxeditor-root-contenteditable a:hover {
-  text-decoration-color: #b45309;
-}
-
-.dark .devotion-editor .mdxeditor-root-contenteditable a {
-  color: #f59e0b;
-  text-decoration-color: rgba(245, 158, 11, 0.3);
-}
-
-.dark .devotion-editor .mdxeditor-root-contenteditable a:hover {
-  text-decoration-color: #f59e0b;
-}
-
-/* Link dialog */
-.devotion-editor .mdxeditor-link-editor,
-.devotion-editor [role="dialog"],
-.devotion-editor .mdxeditor-popup-container>div {
-  background: white;
-  border: 1px solid #e7e1d7;
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.dark .devotion-editor .mdxeditor-link-editor,
-.dark .devotion-editor [role="dialog"],
-.dark .devotion-editor .mdxeditor-popup-container>div {
-  background: #27272a;
-  border-color: #52525b;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  color: #f9fafb;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.devotion-editor .mdxeditor-link-editor input,
-.devotion-editor [role="dialog"] input,
-.devotion-editor .mdxeditor-popup-container input {
-  padding: 8px 10px;
-  color: #1f1a12;
-  transition: all 0.15s ease;
-}
-
-.devotion-editor .mdxeditor-link-editor input:focus,
-.devotion-editor [role="dialog"] input:focus,
-.devotion-editor .mdxeditor-popup-container input:focus {
-  outline: none;
-  border-color: #b45309;
-  box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.15);
-}
-
-.dark .devotion-editor .mdxeditor-link-editor input,
-.dark .devotion-editor [role="dialog"] input,
-.dark .devotion-editor .mdxeditor-popup-container input {
-  background: #18181b;
-  border-color: #52525b;
-  color: #f9fafb;
-}
-
-.dark .devotion-editor .mdxeditor-link-editor input:focus,
-.dark .devotion-editor [role="dialog"] input:focus,
-.dark .devotion-editor .mdxeditor-popup-container input:focus {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
-}
-
-/* Dialog buttons */
-.devotion-editor .mdxeditor-link-editor button,
-.devotion-editor [role="dialog"] button,
-.devotion-editor .mdxeditor-popup-container button {
-  background: #b45309;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.devotion-editor .mdxeditor-link-editor button:hover,
-.devotion-editor [role="dialog"] button:hover,
-.devotion-editor .mdxeditor-popup-container button:hover {
-  background: #92400e;
-}
-
-.dark .devotion-editor .mdxeditor-link-editor button,
-.dark .devotion-editor [role="dialog"] button,
-.dark .devotion-editor .mdxeditor-popup-container button {
-  background: #f59e0b;
-  color: #1f1a12;
-}
-
-.dark .devotion-editor .mdxeditor-link-editor button:hover,
-.dark .devotion-editor [role="dialog"] button:hover,
-.dark .devotion-editor .mdxeditor-popup-container button:hover {
-  background: #fbbf24;
-}
-
-/* Table editor */
-.devotion-editor .mdxeditor-table-editor,
-.devotion-editor [data-radix-popper-content-wrapper] {
-  background: white;
-  border: 1px solid #e7e1d7;
-  border-radius: 8px;
+/* ProseKit basic toolbar */
+.devotion-editor .prosekit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
   padding: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e7e1d7;
+  background: rgba(255, 255, 255, 0.95);
+  flex: 0 0 auto;
 }
 
-.dark .devotion-editor .mdxeditor-table-editor,
-.dark .devotion-editor [data-radix-popper-content-wrapper] {
-  background: #27272a;
-  border-color: #52525b;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.dark .devotion-editor .prosekit-toolbar {
+  border-bottom-color: #3b352c;
+  background: #18181b;
 }
 
-.devotion-editor .mdxeditor-table-editor button,
-.devotion-editor [data-radix-popper-content-wrapper] button {
-  color: #1f1a12;
-  background: transparent;
-  border: 1px solid #e7e1d7;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-}
-
-.devotion-editor .mdxeditor-table-editor button:hover,
-.devotion-editor [data-radix-popper-content-wrapper] button:hover {
-  background: rgba(180, 83, 9, 0.1);
-  border-color: rgba(180, 83, 9, 0.3);
-}
-
-.dark .devotion-editor .mdxeditor-table-editor button,
-.dark .devotion-editor [data-radix-popper-content-wrapper] button {
-  color: #f9fafb;
-  border-color: #52525b;
-}
-
-.dark .devotion-editor .mdxeditor-table-editor button:hover,
-.dark .devotion-editor [data-radix-popper-content-wrapper] button:hover {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.4);
-}
-
-
-/* ===== BLOCKQUOTES ===== */
-
-.devotion-editor .mdxeditor-root-contenteditable blockquote {
-  border-left: 4px solid #b45309;
-  padding-left: 16px;
-  margin: 1em 0;
-  font-style: italic;
-  color: #78716c;
-}
-
-.dark .devotion-editor .mdxeditor-root-contenteditable blockquote {
-  border-left-color: #f59e0b;
+/* Placeholder text */
+.devotion-editor .ProseMirror.ProseMirror-empty::before {
+  content: attr(data-placeholder);
   color: #a8a29e;
+  pointer-events: none;
+  position: absolute;
 }
 
-/* ===== HORIZONTAL RULES ===== */
-
-.devotion-editor .mdxeditor-root-contenteditable hr {
-  border: none;
-  border-top: 2px solid #e7e5e4;
-  margin: 2em 0;
+.dark .devotion-editor .ProseMirror.ProseMirror-empty::before {
+  color: #52525b;
 }
 
-.dark .devotion-editor .mdxeditor-root-contenteditable hr {
-  border-top-color: #3b352c;
-}
-
-/* ===== LISTS ===== */
-
-.devotion-editor .mdxeditor-root-contenteditable ul,
-.devotion-editor .mdxeditor-root-contenteditable ol {
-  padding-left: 1.5em;
-  margin: 0.5em 0;
-}
-
-.devotion-editor .mdxeditor-root-contenteditable li {
-  margin: 0.25em 0;
-}
-
-/* Lighter-feeling toolbar icons/buttons */
-.devotion-editor .mdxeditor-toolbar svg,
-.devotion-editor .mdxeditor-toolbar svg * {
-  stroke-width: 0;
-}
-
-
-
-/* Hide MDX Editor popup container when empty (it's appended to body and shows as a box at bottom of page) */
-.mdxeditor-popup-container:empty {
-  display: none !important;
-}
 
 /* ESV passage HTML (Bible tab) */
 .esv-passage {
@@ -757,7 +734,7 @@ h6 {
 }
 
 .dark .esv-passage a {
-  color: #f59e0b;
+  color: #f0a531;
 }
 
 .esv-passage .footnote {
@@ -779,7 +756,7 @@ h6 {
 }
 
 .dark .esv-passage sup {
-  color: #f59e0b;
+  color: #f0a531;
 }
 
 .esv-passage small.audio {
