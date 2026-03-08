@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/app/lib/auth-client";
+import { HomeNav } from "@/app/components/HomeNav";
 
 const providers = [
   { id: "google", label: "Continue with Google" },
@@ -87,48 +88,60 @@ export default function LoginPage() {
 
   if (!isPending && session?.user) {
     return (
-      <main className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center">
-        <p className="text-sm text-stone-500 dark:text-stone-400">Redirecting...</p>
-      </main>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-sm text-stone-500 dark:text-[#7e7b72]">Redirecting...</p>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 dark:bg-zinc-950">
-      <div className="max-w-md mx-auto px-6 py-20">
-        <div className="rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/70 p-8 shadow-sm">
-          <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-50">
-            Sign in
-          </h1>
-          <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
-            Choose a provider or sign in with email.
-          </p>
+    <div className="min-h-screen bg-background flex flex-col">
+      <HomeNav />
 
-          <div className="mt-6 space-y-3">
-            {providers.map((provider) => (
-              <button
-                key={provider.id}
-                type="button"
-                onClick={() => signIn(provider.id)}
-                disabled={loadingProvider === provider.id}
-                className="w-full rounded-md border border-stone-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loadingProvider === provider.id
-                  ? "Redirecting..."
-                  : provider.label}
-              </button>
-            ))}
+      <main className="flex-1 flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-sm">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-linear-to-br from-amber-500 to-amber-700 text-white text-xl font-bold shadow-sm mb-4">
+              D
+            </div>
+            <h1 className="text-2xl font-bold text-stone-900 dark:text-[#d6d3c8]">
+              Welcome back
+            </h1>
+            <p className="mt-1.5 text-sm text-stone-500 dark:text-[#7e7b72]">
+              Sign in to continue to DayMark
+            </p>
           </div>
 
-          <div className="mt-6 flex items-center gap-3">
-            <span className="flex-1 border-t border-stone-200 dark:border-zinc-700" />
-            <span className="text-xs text-stone-500 dark:text-stone-400">or</span>
-            <span className="flex-1 border-t border-stone-200 dark:border-zinc-700" />
-          </div>
+          {/* Card */}
+          <div className="rounded-2xl border border-stone-200 dark:border-[#2a2720] bg-stone-50 dark:bg-[#171510] p-6 shadow-sm">
+            {/* Social providers */}
+            <div className="space-y-2.5">
+              {providers.map((provider) => (
+                <button
+                  key={provider.id}
+                  type="button"
+                  onClick={() => signIn(provider.id)}
+                  disabled={!!loadingProvider}
+                  className="w-full rounded-xl border border-stone-200 dark:border-[#2a2720] bg-background px-4 py-2.5 text-sm font-medium text-stone-700 dark:text-[#d6d3c8] hover:bg-stone-100 dark:hover:bg-[#1e1c18] hover:border-stone-300 dark:hover:border-[#3a3630] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loadingProvider === provider.id
+                    ? "Redirecting..."
+                    : provider.label}
+                </button>
+              ))}
+            </div>
 
-          <div className="mt-6">
+            {/* Divider */}
+            <div className="my-5 flex items-center gap-3">
+              <span className="flex-1 border-t border-stone-200 dark:border-[#2a2720]" />
+              <span className="text-xs text-stone-400 dark:text-[#7e7b72]">or</span>
+              <span className="flex-1 border-t border-stone-200 dark:border-[#2a2720]" />
+            </div>
+
+            {/* Email OTP */}
             {otpStep === "email" ? (
-              <form onSubmit={sendOtp} className="space-y-3">
+              <form onSubmit={sendOtp} className="space-y-2.5">
                 <input
                   type="email"
                   placeholder="Enter your email"
@@ -136,20 +149,21 @@ export default function LoginPage() {
                   onChange={(e) => setOtpEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
+                  className="w-full rounded-xl border border-stone-200 dark:border-[#2a2720] bg-background px-4 py-2.5 text-sm text-stone-900 dark:text-[#d6d3c8] placeholder:text-stone-400 dark:placeholder:text-[#7e7b72] focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 dark:focus:border-amber-600 transition-colors"
                 />
                 <button
                   type="submit"
                   disabled={otpLoading}
-                  className="w-full rounded-md bg-[#f0a531] px-4 py-2 text-sm font-medium text-stone-900 hover:bg-[#c0831a] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-xl bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-600/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {otpLoading ? "Sending code..." : "Send sign-in code"}
                 </button>
               </form>
             ) : (
               <form onSubmit={signInWithOtp} className="space-y-3">
-                <p className="text-sm text-stone-600 dark:text-stone-400">
-                  We sent a 6-digit code to <strong>{otpEmail}</strong>
+                <p className="text-sm text-stone-500 dark:text-[#7e7b72]">
+                  We sent a 6-digit code to{" "}
+                  <span className="font-medium text-stone-900 dark:text-[#d6d3c8]">{otpEmail}</span>
                 </p>
                 <input
                   type="text"
@@ -161,38 +175,42 @@ export default function LoginPage() {
                   required
                   maxLength={6}
                   autoComplete="one-time-code"
-                  className="w-full rounded-md border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-center text-lg tracking-[0.3em] text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
+                  className="w-full rounded-xl border border-stone-200 dark:border-[#2a2720] bg-background px-4 py-2.5 text-center text-xl tracking-[0.4em] font-mono text-stone-900 dark:text-[#d6d3c8] placeholder:text-stone-300 dark:placeholder:text-[#3a3630] focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 dark:focus:border-amber-600 transition-colors"
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-2.5">
                   <button
                     type="button"
-                    onClick={() => {
-                      setOtpStep("email");
-                      setOtpCode("");
-                    }}
+                    onClick={() => { setOtpStep("email"); setOtpCode(""); }}
                     disabled={otpLoading}
-                    className="flex-1 rounded-md border border-stone-200 dark:border-zinc-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-60"
+                    className="flex-1 rounded-xl border border-stone-200 dark:border-[#2a2720] px-4 py-2.5 text-sm font-medium text-stone-700 dark:text-[#d6d3c8] hover:bg-stone-100 dark:hover:bg-[#1e1c18] transition-colors disabled:opacity-50"
                   >
                     Back
                   </button>
                   <button
                     type="submit"
                     disabled={otpLoading || otpCode.length !== 6}
-                    className="flex-1 rounded-md bg-[#f0a531] px-4 py-2 text-sm font-medium text-stone-900 hover:bg-[#c0831a] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex-1 rounded-xl bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-600/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {otpLoading ? "Signing in..." : "Sign in"}
                   </button>
                 </div>
               </form>
             )}
+
+            {error && (
+              <p className="mt-4 text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
+            )}
           </div>
 
-          {error ? (
-            <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
-          ) : null}
+          <p className="mt-6 text-center text-xs text-stone-400 dark:text-[#7e7b72]">
+            By signing in you agree to our{" "}
+            <a href="/terms" className="text-amber-600 dark:text-amber-400 hover:underline">Terms</a>
+            {" "}and{" "}
+            <a href="/privacy" className="text-amber-600 dark:text-amber-400 hover:underline">Privacy Policy</a>.
+          </p>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
 

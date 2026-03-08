@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/app/lib/auth-server";
+import { HomeNav } from "./components/HomeNav";
 import { Hero } from "./components/Hero";
 import { Features } from "./components/Features";
 import { HowItWorks } from "./components/HowItWorks";
@@ -18,10 +19,11 @@ export default async function Home() {
   const latestAnnouncement = announcements[0];
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-background">
+      <HomeNav />
       <main>
         {latestAnnouncement && (
-          <div className="max-w-6xl mx-auto px-6 pt-8">
+          <div className="max-w-6xl mx-auto px-6 pt-6">
             <AnnouncementBanner announcement={latestAnnouncement} />
           </div>
         )}

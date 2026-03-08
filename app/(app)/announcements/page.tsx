@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Markdown from "react-markdown";
 import { Footer } from "@/app/components/Footer";
+import { HomeNav } from "@/app/components/HomeNav";
 import { getAnnouncements } from "@/app/lib/announcements";
+import { getSession } from "@/app/lib/auth-server";
 
 export const metadata = {
   title: "Updates & Announcements | DayMark",
@@ -9,10 +11,15 @@ export const metadata = {
 };
 
 export default async function AnnouncementsPage() {
-  const announcements = await getAnnouncements();
+  const [announcements, session] = await Promise.all([
+    getAnnouncements(),
+    getSession(),
+  ]);
+  const isLoggedIn = !!session?.user;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {!isLoggedIn && <HomeNav />}
       <main className="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-stone-900 dark:text-[#d6d3c8] mb-3">
