@@ -37,6 +37,7 @@ function applyTheme(theme: Theme) {
 
 type ThemeContextValue = {
   theme: Theme;
+  resolvedTheme: "light" | "dark";
   setTheme: (theme: Theme) => void;
 };
 
@@ -44,12 +45,20 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = getStoredTheme();
     setThemeState(stored);
     applyTheme(stored);
+    const isDark =
+      stored === "dark"
+        ? true
+        : stored === "light"
+          ? false
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setResolvedTheme(isDark ? "dark" : "light");
     setMounted(true);
   }, []);
 
@@ -59,6 +68,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const listener = () => {
       if (getStoredTheme() === "system") {
         applyTheme("system");
+        setResolvedTheme(media.matches ? "dark" : "light");
       }
     };
     media.addEventListener("change", listener);
@@ -69,9 +79,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(next);
     localStorage.setItem(STORAGE_KEY, next);
     applyTheme(next);
+    const isDark =
+      next === "dark"
+        ? true
+        : next === "light"
+          ? false
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setResolvedTheme(isDark ? "dark" : "light");
   }, []);
 
-  const value: ThemeContextValue = { theme, setTheme };
+  const value: ThemeContextValue = { theme, resolvedTheme, setTheme };
 
   return (
     <ThemeContext.Provider value={value}>
@@ -85,6 +102,7 @@ export function useTheme(): ThemeContextValue {
   if (!ctx) {
     return {
       theme: "system",
+      resolvedTheme: "light",
       setTheme(next: Theme) {
         if (typeof window !== "undefined") {
           localStorage.setItem(STORAGE_KEY, next);

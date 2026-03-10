@@ -42,7 +42,7 @@ export function DefaultTemplateEditorSection({
   };
 
   return (
-    <div className="p-4 px-6">
+    <div className="p-4 px-6 min-w-0 overflow-x-hidden">
       <div className="flex items-center gap-4 mb-4">
         <div className="h-10 w-10 text-amber-600 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center shrink-0">
           <FileText className="h-5 w-5" />
@@ -53,11 +53,11 @@ export function DefaultTemplateEditorSection({
         </div>
       </div>
       <div className="space-y-4">
-        <div className="rounded-xl border border-stone-200 dark:border-[#38332a] bg-stone-50 dark:bg-[#23201a] overflow-hidden">
+        <div className="w-full min-w-0 rounded-xl border border-stone-200 dark:border-[#38332a] bg-stone-50 dark:bg-[#23201a] overflow-hidden">
           <ForwardRefEditor
             ref={editorRef}
             markdown={initialMarkdown}
-            className="devotion-editor min-h-[280px] rounded-xl text-stone-900 dark:text-[#d6d3c8] font-sans prose prose-stone dark:prose-invert max-w-none leading-snug px-4 py-3"
+            className="devotion-editor w-full min-w-0 min-h-70 rounded-xl text-stone-900 dark:text-[#d6d3c8] font-sans prose prose-stone dark:prose-invert max-w-none leading-snug px-4 py-3 overflow-x-hidden"
           />
         </div>
         <div className="flex items-center py-2 gap-3">

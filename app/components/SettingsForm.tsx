@@ -79,7 +79,7 @@ type SettingsFormProps = {
 
 export function SettingsForm({ defaultName, email, defaultImage = "" }: SettingsFormProps) {
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [name, setName] = useState(defaultName);
   const [timezone, setTimezone] = useState("UTC");
   const [nameSaving, setNameSaving] = useState(false);
@@ -478,16 +478,14 @@ export function SettingsForm({ defaultName, email, defaultImage = "" }: Settings
 
           <div className="rounded-xl border border-stone-200 dark:border-[#2a2720] bg-stone-50/50 dark:bg-[#23201a]/50 p-4 flex items-center gap-3">
             <div className="rounded-md bg-stone-200/60 dark:bg-[#322f27] p-1.5 flex items-center justify-center">
-              {theme === 'light' ? (
-                <Sun className="h-4 w-4 text-amber-600 dark:text-amber-500" />
-              ) : theme === 'dark' ? (
+              {resolvedTheme === 'dark' ? (
                 <Moon className="h-4 w-4 text-amber-600 dark:text-amber-500" />
               ) : (
-                <Moon className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+                <Sun className="h-4 w-4 text-amber-600 dark:text-amber-500" />
               )}
             </div>
             <p className="text-sm text-stone-600 dark:text-[#8A8070]">
-              Currently showing in <strong className="text-stone-900 dark:text-[#e8e4db] font-medium">{theme === 'system' ? 'dark' : theme} mode</strong> (system preference)
+              Currently showing in <strong className="text-stone-900 dark:text-[#e8e4db] font-medium">{resolvedTheme} mode</strong>{theme === 'system' && ' (system preference)'}
             </p>
           </div>
         </CardContent>
@@ -1027,7 +1025,7 @@ export function SettingsForm({ defaultName, email, defaultImage = "" }: Settings
           setDeleteError(null);
         }
       }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete account</DialogTitle>
             <DialogDescription>

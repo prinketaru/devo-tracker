@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getDb } from "@/app/lib/mongodb";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
+import { contentToHtml } from "@/app/lib/markdown";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -17,10 +17,11 @@ export default async function SharedDevotionPage({ params }: Props) {
   if (!doc) notFound();
 
   const createdAt = doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt);
+  const rawContent = (doc.content ?? "").trim();
   const devotion = {
     title: (doc.title ?? "").trim() || "Untitled",
     passage: (doc.passage ?? "").trim() || "—",
-    content: (doc.content ?? "").trim(),
+    content: contentToHtml(rawContent),
     date: createdAt.toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
@@ -46,9 +47,10 @@ export default async function SharedDevotionPage({ params }: Props) {
               )}
             </p>
           </header>
-          <div className="devotion-notes prose prose-stone dark:prose-invert max-w-none text-base leading-relaxed">
-            <ReactMarkdown>{devotion.content}</ReactMarkdown>
-          </div>
+          <div
+            className="devotion-notes prose prose-stone dark:prose-invert max-w-none text-base leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: devotion.content }}
+          />
           <footer className="mt-10 pt-6 border-t border-stone-200 dark:border-zinc-800">
             <Link
               href="/"

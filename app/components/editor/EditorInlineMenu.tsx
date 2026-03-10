@@ -45,24 +45,6 @@ function getInlineMenuItems(editor: Editor<AnyExtension>) {
         currentLink: getCurrentLink(editor.state) ?? "",
       }
       : undefined,
-    textColor: cmds.addTextColor
-      ? {
-        isActive: marks.textColor?.isActive?.() ?? false,
-        removeCommand: () => cmds.removeTextColor?.(),
-        applyCommand: (color: string) => cmds.addTextColor?.({ color }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        isColorActive: (color: string) => marks.textColor?.isActive?.({ color }) ?? false,
-      }
-      : undefined,
-    bgColor: cmds.addBackgroundColor
-      ? {
-        isActive: marks.backgroundColor?.isActive?.() ?? false,
-        removeCommand: () => cmds.removeBackgroundColor?.(),
-        applyCommand: (color: string) => cmds.addBackgroundColor?.({ color }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        isColorActive: (color: string) => marks.backgroundColor?.isActive?.({ color }) ?? false,
-      }
-      : undefined,
   };
 }
 
@@ -78,37 +60,12 @@ function getCurrentLink(state: EditorState): string | undefined {
   return undefined;
 }
 
-// ---------- Color swatches ----------
-
-const TEXT_COLORS = [
-  { label: "Default", value: "currentColor" },
-  { label: "Gray", value: "#9ca3af" },
-  { label: "Orange", value: "#ea580c" },
-  { label: "Yellow", value: "#ca8a04" },
-  { label: "Green", value: "#16a34a" },
-  { label: "Blue", value: "#2563eb" },
-  { label: "Purple", value: "#9333ea" },
-  { label: "Red", value: "#dc2626" },
-];
-
-const BG_COLORS = [
-  { label: "Default", value: "transparent" },
-  { label: "Yellow", value: "#fef9c3" },
-  { label: "Green", value: "#d1fae5" },
-  { label: "Blue", value: "#dbeafe" },
-  { label: "Purple", value: "#e9d5ff" },
-  { label: "Pink", value: "#fce7f3" },
-  { label: "Red", value: "#fecaca" },
-  { label: "Orange", value: "#ffedd5" },
-];
-
 // ---------- Component ----------
 
 export default function EditorInlineMenu() {
   const editor = useEditor<AnyExtension>();
   const items = useEditorDerivedValue(getInlineMenuItems);
   const [linkMenuOpen, setLinkMenuOpen] = useState(false);
-  const [colorMenuOpen, setColorMenuOpen] = useState(false);
 
   const handleLinkUpdate = (href?: string) => {
     if (href) {
@@ -134,7 +91,6 @@ export default function EditorInlineMenu() {
         onOpenChange={(open) => {
           if (!open) {
             setLinkMenuOpen(false);
-            setColorMenuOpen(false);
           }
         }}
       >
@@ -176,20 +132,6 @@ export default function EditorInlineMenu() {
           </EditorButton>
         )}
         {/* Text / Background color button */}
-        {(items.textColor || items.bgColor) && (
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setColorMenuOpen((o) => !o)}
-            className="inline-flex items-center justify-center rounded p-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground"
-            title="Color"
-          >
-            <span className="text-base font-bold leading-none"
-              style={{ color: items.textColor?.isActive ? undefined : undefined }}>
-              A
-            </span>
-          </button>
-        )}
       </InlinePopover>
 
       {/* Link edit popover */}
@@ -233,69 +175,6 @@ export default function EditorInlineMenu() {
             >
               Remove link
             </button>
-          )}
-        </InlinePopover>
-      )}
-
-      {/* Color picker popover */}
-      {(items.textColor || items.bgColor) && colorMenuOpen && (
-        <InlinePopover
-          placement="bottom"
-          open={colorMenuOpen}
-          onOpenChange={setColorMenuOpen}
-          className="z-50 rounded-lg border border-[#E3DED4] dark:border-[#2E2B23] bg-[#F9F8F5] dark:bg-[#171510] shadow-md p-3 w-52"
-        >
-          {items.textColor && (
-            <div className="mb-3">
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-500">Text color</p>
-              <div className="flex flex-wrap gap-1">
-                {TEXT_COLORS.map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    title={c.label}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => {
-                      if (c.value === "currentColor") {
-                        items.textColor?.removeCommand();
-                      } else {
-                        items.textColor?.applyCommand(c.value);
-                      }
-                    }}
-                    className={`w-6 h-6 rounded border-2 transition-all ${items.textColor?.isColorActive(c.value) ? "border-amber-500 scale-110" : "border-stone-200 dark:border-stone-700 hover:scale-110"}`}
-                    style={{ backgroundColor: c.value === "currentColor" ? "transparent" : c.value }}
-                  >
-                    {c.value === "currentColor" && <span className="text-[10px] font-semibold text-stone-600 dark:text-stone-300">A</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {items.bgColor && (
-            <div>
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-500">Highlight</p>
-              <div className="flex flex-wrap gap-1">
-                {BG_COLORS.map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    title={c.label}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => {
-                      if (c.value === "transparent") {
-                        items.bgColor?.removeCommand();
-                      } else {
-                        items.bgColor?.applyCommand(c.value);
-                      }
-                    }}
-                    className={`w-6 h-6 rounded border-2 transition-all ${items.bgColor?.isColorActive(c.value) ? "border-amber-500 scale-110" : "border-stone-200 dark:border-stone-700 hover:scale-110"}`}
-                    style={{ backgroundColor: c.value === "transparent" ? undefined : c.value }}
-                  >
-                    {c.value === "transparent" && <span className="text-[10px]">✕</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
           )}
         </InlinePopover>
       )}

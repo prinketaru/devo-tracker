@@ -24,3 +24,16 @@ export function htmlFromMarkdown(markdown: string): string {
         .processSync(markdown)
         .toString();
 }
+
+/**
+ * Render stored devotion content as HTML.
+ * New devotions are stored as raw HTML (to preserve inline styles like text-color and
+ * highlight). Older devotions are stored as Markdown — we detect which format it is
+ * and convert accordingly for full backward compatibility.
+ */
+export function contentToHtml(content: string): string {
+    if (!content) return "";
+    // Heuristic: HTML content starts with a tag; Markdown never starts with "<"
+    if (content.trimStart().startsWith("<")) return content;
+    return htmlFromMarkdown(content);
+}

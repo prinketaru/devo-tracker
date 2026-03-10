@@ -81,6 +81,22 @@
   --sidebar-accent-foreground: #d6d3c8;
   --sidebar-border: #2a2720;
   --sidebar-ring: #f0a531;
+  /* Editor text colors (light mode) */
+  --tc-gray:   #6b7280;
+  --tc-orange: #ea580c;
+  --tc-yellow: #ca8a04;
+  --tc-green:  #16a34a;
+  --tc-blue:   #2563eb;
+  --tc-purple: #9333ea;
+  --tc-red:    #dc2626;
+  /* Editor highlight colors (light mode) */
+  --bg-yellow: #fef08a;
+  --bg-green:  #bbf7d0;
+  --bg-blue:   #bfdbfe;
+  --bg-purple: #e9d5ff;
+  --bg-pink:   #fbcfe8;
+  --bg-red:    #fecaca;
+  --bg-orange: #fed7aa;
 }
 
 .dark {
@@ -115,6 +131,22 @@
   --sidebar-accent-foreground: #d6d3c8;
   --sidebar-border: #2a2720;
   --sidebar-ring: #f0a531;
+  /* Editor text colors (dark mode) */
+  --tc-gray:   #9ca3af;
+  --tc-orange: #fb923c;
+  --tc-yellow: #fbbf24;
+  --tc-green:  #4ade80;
+  --tc-blue:   #60a5fa;
+  --tc-purple: #c084fc;
+  --tc-red:    #f87171;
+  /* Editor highlight colors (dark mode) */
+  --bg-yellow: #854d0e;
+  --bg-green:  #14532d;
+  --bg-blue:   #1e3a8a;
+  --bg-purple: #4a1d96;
+  --bg-pink:   #831843;
+  --bg-red:    #7f1d1d;
+  --bg-orange: #7c2d12;
 }
 
 /* Streak card geometric shape animations */
@@ -214,8 +246,15 @@
   background: #1F1C16;
 }
 
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* Pointer cursor on interactive elements */

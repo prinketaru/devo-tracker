@@ -11,14 +11,14 @@ export default async function AppLayout({
     const isLoggedIn = !!session?.user;
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-background">
+        <div className="flex flex-col md:flex-row min-h-screen bg-background overflow-x-hidden">
             {isLoggedIn && <AppSidebar />}
             {/*
               The main content area gets margin-left on desktop (w-64 = 16rem = 256px)
               to accommodate the fixed desktop sidebar.
               On mobile, the AppSidebar renders a top sticky bar instead.
             */}
-            <div className={`flex-1 flex flex-col min-w-0 ${isLoggedIn ? "md:ml-64" : ""}`}>
+            <div className={`flex-1 flex flex-col min-w-0 max-w-full ${isLoggedIn ? "md:ml-64" : ""}`}>
                 {/* Top bar: hidden on mobile (AppSidebar already renders a top bar there) */}
                 {isLoggedIn && (
                     <div className="hidden md:block">

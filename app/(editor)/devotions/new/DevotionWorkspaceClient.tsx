@@ -131,8 +131,8 @@ export default function DevotionWorkspaceClient() {
               <div className="w-px h-4 bg-stone-200 dark:bg-[#38332a] hidden sm:block" />
 
               <div className="hidden sm:flex items-center gap-1.5 whitespace-nowrap">
-                <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div className="h-6 w-6 rounded-md bg-linear-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center shrink-0 text-xs font-bold shadow-sm">
+                  D
                 </div>
                 <span className="font-bold text-sm text-stone-900 dark:text-[#d6d3c8] tracking-tight">DayMark</span>
               </div>

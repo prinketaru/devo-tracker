@@ -32,23 +32,18 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { fadeOnly?: boolean }
->(({ className, children, fadeOnly = false, ...props }, ref) => (
+>(({ className, children, fadeOnly: _fadeOnly = false, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        // Mobile: bottom sheet
-        "fixed bottom-0 left-0 right-0 z-50 grid w-full max-h-[90dvh] overflow-y-auto gap-4 border-t border-stone-200 dark:border-[#2e2b23] bg-background p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-lg rounded-t-2xl duration-200",
+        // Mobile: bottom sheet position, but fade-only animation
+        "fixed bottom-0 left-0 right-0 z-50 grid w-full max-w-full max-h-[90dvh] overflow-x-hidden overflow-y-auto gap-4 border-t border-stone-200 dark:border-[#2e2b23] bg-background p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-lg rounded-t-2xl duration-200",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        // Desktop: centred modal
+        // Desktop: centred modal, fade only
         "sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:rounded-xl sm:border sm:pb-6",
-        !fadeOnly && "sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
-        "sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0",
-        !fadeOnly && "sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=open]:slide-in-from-left-1/2",
-        !fadeOnly && "sm:data-[state=closed]:slide-out-to-top-[48%] sm:data-[state=open]:slide-in-from-top-[48%]",
         className
       )}
       {...props}

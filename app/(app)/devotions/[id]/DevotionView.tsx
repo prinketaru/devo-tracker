@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import ReactMarkdown from "react-markdown";
+import { useMemo, useState } from "react";
+import { contentToHtml } from "@/app/lib/markdown";
 import { ExportDevotionModal } from "@/app/components/ExportDevotionModal";
 import { ShareDevotionModal } from "@/app/components/ShareDevotionModal";
 import { DEVOTION_CATEGORY_LABELS } from "@/app/lib/devotion-categories";
@@ -22,6 +22,7 @@ type Devotion = {
 };
 
 export function DevotionView({ devotion }: { devotion: Devotion }) {
+  const htmlContent = useMemo(() => contentToHtml(devotion.content), [devotion.content]);
   const [exportOpen, setExportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -132,9 +133,10 @@ export function DevotionView({ devotion }: { devotion: Devotion }) {
         {/* Content */}
         <div className="px-6 sm:px-10 py-8">
           {devotion.content ? (
-            <div className="devotion-notes prose prose-stone dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:text-stone-900 dark:prose-headings:text-[#d6d3c8] prose-a:text-amber-700 dark:prose-a:text-amber-400">
-              <ReactMarkdown>{devotion.content}</ReactMarkdown>
-            </div>
+            <div
+              className="devotion-notes prose prose-stone dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:text-stone-900 dark:prose-headings:text-[#d6d3c8] prose-a:text-amber-700 dark:prose-a:text-amber-400"
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
           ) : (
             <p className="text-sm text-stone-400 dark:text-[#4a4840] italic">No content recorded.</p>
           )}

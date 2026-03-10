@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import ReactMarkdown from "react-markdown";
+import { useEffect, useMemo } from "react";
+import { contentToHtml } from "@/app/lib/markdown";
 
 type Devotion = {
   id: string;
@@ -17,6 +17,8 @@ export function PrintDevotionClient({ devotion }: { devotion: Devotion }) {
   useEffect(() => {
     window.print();
   }, []);
+
+  const htmlContent = useMemo(() => contentToHtml(devotion.content), [devotion.content]);
 
   return (
     <>
@@ -54,9 +56,10 @@ export function PrintDevotionClient({ devotion }: { devotion: Devotion }) {
             </p>
           )}
         </header>
-        <div className="devotion-notes prose prose-stone max-w-none text-base leading-relaxed">
-          <ReactMarkdown>{devotion.content}</ReactMarkdown>
-        </div>
+        <div
+          className="devotion-notes prose prose-stone max-w-none text-base leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: htmlContent }}
+        />
         <footer className="mt-12 pt-4 border-t border-stone-200 text-xs text-stone-500">
           DayMark — devotracker.app
         </footer>

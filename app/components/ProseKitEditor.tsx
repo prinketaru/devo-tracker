@@ -1,9 +1,9 @@
 "use client";
 
-import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState, type ForwardedRef } from "react";
+import React, { forwardRef, useImperativeHandle, useMemo, useState, type ForwardedRef } from "react";
 import { createEditor, type Editor } from "prosekit/core";
 import type { BasicExtension } from "prosekit/basic";
-import { ProseKit, useDocChange, useEditor, useEditorDerivedValue } from "prosekit/react";
+import { ProseKit, useEditor, useEditorDerivedValue } from "prosekit/react";
 import { TooltipContent, TooltipRoot, TooltipTrigger } from "prosekit/react/tooltip";
 import { union } from "prosekit/core";
 import {
@@ -13,6 +13,11 @@ import {
   Minus, Quote, List, ListOrdered,
   Table, Baseline, Highlighter,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { defineDoc } from "prosekit/extensions/doc";
 import { defineText } from "prosekit/extensions/text";
 import { defineParagraph } from "prosekit/extensions/paragraph";
@@ -46,9 +51,7 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
-import rehypeParse from "rehype-parse";
-import rehypeRemark from "rehype-remark";
-import remarkStringify from "remark-stringify";
+// rehypeParse / rehypeRemark / remarkStringify removed — content is now stored as HTML
 import { jsonFromHTML } from "prosekit/core";
 import "prosekit/basic/style.css";
 
@@ -73,14 +76,9 @@ function markdownToHTML(markdown: string): string {
   return String(result);
 }
 
-function htmlToMarkdown(html: string): string {
-  const result = unified()
-    .use(rehypeParse)
-    .use(rehypeRemark)
-    .use(remarkGfm)
-    .use(remarkStringify)
-    .processSync(html);
-  return String(result);
+/** Detect whether stored content is HTML (new format) or Markdown (legacy). */
+function isHtmlContent(content: string): boolean {
+  return content.trimStart().startsWith("<");
 }
 
 // ---------- Toolbar helpers ----------
@@ -142,26 +140,28 @@ function getToolbarItems(editor: Editor<BasicExtension>) {
   };
 }
 
+// CSS-variable values are stored in the HTML so the colour adapts to the
+// current theme automatically (light vs dark) via the definitions in globals.css.
 const TOOLBAR_TEXT_COLORS = [
   { label: "Default", value: "" },
-  { label: "Gray", value: "#6b7280" },
-  { label: "Orange", value: "#f97316" },
-  { label: "Yellow", value: "#eab308" },
-  { label: "Green", value: "#22c55e" },
-  { label: "Blue", value: "#3b82f6" },
-  { label: "Purple", value: "#a855f7" },
-  { label: "Red", value: "#ef4444" },
+  { label: "Gray",   value: "var(--tc-gray)" },
+  { label: "Orange", value: "var(--tc-orange)" },
+  { label: "Yellow", value: "var(--tc-yellow)" },
+  { label: "Green",  value: "var(--tc-green)" },
+  { label: "Blue",   value: "var(--tc-blue)" },
+  { label: "Purple", value: "var(--tc-purple)" },
+  { label: "Red",    value: "var(--tc-red)" },
 ];
 
 const TOOLBAR_BG_COLORS = [
-  { label: "None", value: "" },
-  { label: "Yellow", value: "#fef08a" },
-  { label: "Green", value: "#bbf7d0" },
-  { label: "Blue", value: "#bfdbfe" },
-  { label: "Purple", value: "#e9d5ff" },
-  { label: "Pink", value: "#fbcfe8" },
-  { label: "Red", value: "#fecaca" },
-  { label: "Orange", value: "#fed7aa" },
+  { label: "None",   value: "" },
+  { label: "Yellow", value: "var(--bg-yellow)" },
+  { label: "Green",  value: "var(--bg-green)" },
+  { label: "Blue",   value: "var(--bg-blue)" },
+  { label: "Purple", value: "var(--bg-purple)" },
+  { label: "Pink",   value: "var(--bg-pink)" },
+  { label: "Red",    value: "var(--bg-red)" },
+  { label: "Orange", value: "var(--bg-orange)" },
 ];
 
 function ToolbarColorPicker({ type }: { type: "text" | "bg" }) {
@@ -172,59 +172,62 @@ function ToolbarColorPicker({ type }: { type: "text" | "bg" }) {
   const colors = type === "text" ? TOOLBAR_TEXT_COLORS : TOOLBAR_BG_COLORS;
 
   const applyColor = (value: string) => {
+    editor.focus();
     if (type === "text") {
-      if (!value) cmds.unsetTextColor?.();
-      else cmds.setTextColor?.({ color: value });
+      const setTextColor = cmds.setTextColor ?? cmds.addTextColor;
+      const unsetTextColor = cmds.unsetTextColor ?? cmds.removeTextColor;
+      if (!value) unsetTextColor?.();
+      else setTextColor?.({ color: value });
     } else {
-      if (!value) cmds.unsetBackgroundColor?.();
-      else cmds.setBackgroundColor?.({ color: value });
+      const setBackgroundColor = cmds.setBackgroundColor ?? cmds.addBackgroundColor;
+      const unsetBackgroundColor = cmds.unsetBackgroundColor ?? cmds.removeBackgroundColor;
+      if (!value) unsetBackgroundColor?.();
+      else setBackgroundColor?.({ color: value });
     }
+    editor.focus();
     setOpen(false);
   };
 
   return (
-    <div className="relative shrink-0">
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <TooltipRoot>
         <TooltipTrigger className="flex shrink-0 items-center justify-center">
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setOpen((o) => !o)}
-            className={[
-              "inline-flex items-center justify-center rounded p-2 text-sm transition-colors",
-              "hover:bg-accent hover:text-accent-foreground text-muted-foreground",
-            ].join(" ")}
-          >
-            {type === "text" ? <Baseline className="h-5 w-5" /> : <Highlighter className="h-5 w-5" />}
-          </button>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              className={[
+                "inline-flex items-center justify-center rounded p-2 text-sm transition-colors",
+                "hover:bg-accent hover:text-accent-foreground text-muted-foreground",
+              ].join(" ")}
+            >
+              {type === "text" ? <Baseline className="h-5 w-5" /> : <Highlighter className="h-5 w-5" />}
+            </button>
+          </DropdownMenuTrigger>
         </TooltipTrigger>
         <TooltipContent className="z-50 overflow-hidden rounded-md border bg-popover px-2 py-1 text-xs text-popover-foreground shadow-sm animate-in fade-in-0 zoom-in-95">
           {type === "text" ? "Text Color" : "Highlight"}
         </TooltipContent>
       </TooltipRoot>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 z-50 mt-1 rounded-lg border border-[#E3DED4] dark:border-[#2E2B23] bg-[#F9F8F5] dark:bg-[#171510] shadow-md p-2 w-36">
-            <div className="flex flex-wrap gap-1">
-              {colors.map((c) => (
-                <button
-                  key={c.value || "none"}
-                  type="button"
-                  title={c.label}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyColor(c.value)}
-                  className="w-6 h-6 rounded border border-stone-200 dark:border-stone-700 hover:scale-110 transition-all flex items-center justify-center"
-                  style={{ backgroundColor: c.value || undefined }}
-                >
-                  {!c.value && <span className="text-[10px] text-stone-400">✕</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+
+      <DropdownMenuContent align="start" className="w-36 rounded-lg border border-[#E3DED4] dark:border-[#2E2B23] bg-[#F9F8F5] dark:bg-[#171510] p-2">
+        <div className="flex flex-wrap gap-1">
+          {colors.map((c) => (
+            <button
+              key={c.value || "none"}
+              type="button"
+              title={c.label}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => applyColor(c.value)}
+              className="h-6 w-6 rounded border border-stone-200 dark:border-stone-700 transition-all hover:scale-110 flex items-center justify-center"
+              style={{ backgroundColor: c.value || undefined }}
+            >
+              {!c.value && <span className="text-[10px] text-stone-400">✕</span>}
+            </button>
+          ))}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -278,7 +281,7 @@ function EditorToolbar() {
   const items = useEditorDerivedValue(getToolbarItems);
 
   return (
-    <div className="flex items-center gap-0.5 bg-background px-2 py-1 border-b border-[#E3DED4] dark:border-[#2E2B23] overflow-x-auto">
+    <div className="flex items-center gap-0.5 bg-background px-2 py-1 border-b border-[#E3DED4] dark:border-[#2E2B23] overflow-x-auto w-full min-w-0 pointer-events-auto">
       {items.undo && (
         <ToolbarButton pressed={items.undo.isActive} disabled={!items.undo.canExec} onClick={items.undo.command} tooltip="Undo">
           <Undo2 className="h-5 w-5" />
@@ -424,8 +427,8 @@ function getEditorCounts(editor: Editor<any>) {
 function EditorFooter() {
   const { words, chars } = useEditorDerivedValue(getEditorCounts);
   return (
-    <div className="flex items-center justify-between px-4 py-1.5 border-t border-[#E3DED4] dark:border-[#2E2B23] text-xs text-muted-foreground select-none">
-      <span className="flex gap-3">
+    <div className="flex items-center justify-between px-4 py-1.5 border-t border-[#E3DED4] dark:border-[#2E2B23] text-xs text-muted-foreground select-none w-full min-w-0">
+      <span className="flex gap-3 shrink-0">
         <span>{words.toLocaleString()} {words === 1 ? "word" : "words"}</span>
         <span>{chars.toLocaleString()} {chars === 1 ? "character" : "characters"}</span>
       </span>
@@ -436,33 +439,27 @@ function EditorFooter() {
 
 const ProseKitEditorInner = forwardRef<ProseKitEditorHandle, ProseKitEditorProps & { editor: any }>(
   ({ editor, className = "" }, ref) => {
-    const currentMarkdownRef = useRef("");
-
-    // Track markdown changes
-    useDocChange(() => {
-      const html = editor.getDocHTML();
-      currentMarkdownRef.current = htmlToMarkdown(html);
-    }, { editor });
-
     useImperativeHandle(ref, () => ({
+      // "getMarkdown" name kept for interface compat; now returns raw HTML so that
+      // inline styles (text-color, highlight) are preserved when the devotion is saved.
       getMarkdown: () => {
-        const html = editor.getDocHTML();
-        return htmlToMarkdown(html);
+        return editor.getDocHTML();
       },
-      setMarkdown: (newMarkdown: string) => {
-        const html = markdownToHTML(newMarkdown);
+      setMarkdown: (content: string) => {
+        // Support both new HTML storage and legacy Markdown storage.
+        const html = isHtmlContent(content) ? content : markdownToHTML(content);
         const json = jsonFromHTML(html, { schema: editor.schema });
         editor.setContent(json);
       },
     }));
 
     return (
-      <div className={`prosekit-editor flex flex-col overflow-hidden ${className}`}>
+      <div className={`prosekit-editor flex flex-col w-full min-w-0 max-w-full overflow-hidden ${className}`}>
         {/* Content: first on mobile (top), second on desktop (below toolbar) */}
-        <div className="order-first lg:order-none relative flex-1 overflow-y-auto min-h-0">
+        <div className="order-first lg:order-0 relative flex-1 min-h-0 min-w-0 w-full overflow-x-hidden overflow-y-auto">
           <div
             ref={editor.mount}
-            className="ProseMirror min-h-full pl-4 sm:pl-16 pr-4 py-4 outline-none prose prose-stone dark:prose-invert max-w-none"
+            className="ProseMirror min-h-full min-w-0 w-full pl-4 sm:pl-16 pr-4 py-4 outline-none prose prose-stone dark:prose-invert max-w-none wrap-anywhere"
           />
           <EditorInlineMenu />
           <EditorSlashMenu />
@@ -471,10 +468,12 @@ const ProseKitEditorInner = forwardRef<ProseKitEditorHandle, ProseKitEditorProps
           <EditorTableHandle />
         </div>
         {/* Toolbar: last on mobile (bottom, above keyboard), first on desktop (top) */}
-        <div className="order-last lg:order-first">
+        <div className="order-last lg:order-first min-w-0 w-full overflow-hidden">
           <EditorToolbar />
         </div>
-        <EditorFooter />
+        <div className="min-w-0 w-full overflow-hidden">
+          <EditorFooter />
+        </div>
       </div>
     );
   }
@@ -487,11 +486,10 @@ export const ProseKitEditor = forwardRef<ProseKitEditorHandle, ProseKitEditorPro
     const editor = useMemo(() => {
       const extension = defineExtension();
       
-      // Convert initial markdown to HTML then to JSON
+      // Support both new HTML storage and legacy Markdown storage.
       let defaultContent = undefined;
       if (markdown) {
-        const html = markdownToHTML(markdown);
-        defaultContent = html;
+        defaultContent = isHtmlContent(markdown) ? markdown : markdownToHTML(markdown);
       }
       
       return createEditor({ 
